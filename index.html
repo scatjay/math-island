@@ -38,13 +38,13 @@ details.log{background:#FFFDF2!important;border:3px solid var(--edge)!important;
     <div class="hud"><span id="lv">Lv.1</span><div class="bar"><i id="xpbar"></i></div><span id="xp">0 / 50</span><span id="qn">任務 0/3</span></div>
     <div class="cvw"><canvas id="cv" width="192" height="144" aria-label="像素教室，可用方向鍵移動"></canvas><div id="lbls"></div></div>
     <div class="hint" id="hint"></div>
-    <div class="dlg" id="dlg"><div class="who" id="who">提示</div><div id="txt">走到機器人旁邊（黑板前），按 E 或「調查」跟它說話。</div><div class="choices" id="ch"></div></div>
+    <div class="dlg" id="dlg"><div class="who" id="who">提示</div><div id="txt">走到機器人旁邊（黑板前），按 E 或「看看」跟它說話。</div><div class="choices" id="ch"></div></div>
     <form id="askf" class="askf" hidden><input id="askin" maxlength="60" placeholder="輸入你的問題（60 字內）" autocomplete="off"><button type="submit">送出</button></form>
     <div class="pad">
       <div class="dpad"><span></span><button data-d="up" aria-label="上">↑</button><span></span><button data-d="left" aria-label="左">←</button><button data-d="down" aria-label="下">↓</button><button data-d="right" aria-label="右">→</button></div>
-      <button class="main" id="act" style="padding:18px 22px;font-size:18px">調查　E</button>
+      <button class="main" id="act" style="padding:18px 22px;font-size:18px">看看　E</button>
     </div>
-    <div class="keys">移動：方向鍵或 W A S D　調查／下一句：E、空白鍵、Enter</div>
+    <div class="keys">移動：方向鍵或 W A S D　看看／下一句：E、空白鍵、Enter</div>
   </div>
   <details class="stage adm" id="adm"><summary>老師後台（示意）：流量監控與上限設定</summary><div id="admbody"></div></details>
   <div class="note">試作畫面：題目與對話是示意，不是真的 AI；角色與場景都由我們自創，沒有使用既有作品。進度只存在這台裝置的瀏覽器。</div>
@@ -110,7 +110,7 @@ function pxBoot(){
         if(e.code==='auth/popup-blocked'){auth.signInWithRedirect(prov);return;}
         if(e.code==='auth/popup-closed-by-user'||e.code==='auth/cancelled-popup-request'){err.textContent='登入視窗被關掉了，再按一次就好。';return;}
         err.textContent='登入失敗（'+(e.code||e.message)+'）。請確認網路，或請老師協助。';});};
-  }).catch(function(){go.disabled=true;err.textContent='登入元件載入失敗，請檢查網路後重新整理。';});
+  }).catch(function(){go.disabled=true;err.textContent='登入元件載入失敗，請確認網路後重新整理。';});
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',pxBoot);else pxBoot();
 </script>
@@ -175,7 +175,7 @@ function say(w,t,choices){who.textContent=w;ch.innerHTML='';clearInterval(timer)
   timer=setInterval(function(){i++;txt.textContent=t.slice(0,i);if(i>=t.length){clearInterval(timer);if(choices)choices.forEach(function(o){var b=document.createElement('button');b.textContent=o.t;b.onclick=o.f;ch.appendChild(b);});}},22);}
 function end(){mode='walk';closeAsk();who.textContent='提示';txt.textContent=scene==='world'?'用方向鍵航行。靠近島邊的碼頭按 E。被濃霧包住的島還過不去。':scene==='classroom'?'用方向鍵走動，靠近東西按 E。從下方的門可以出發去島嶼。':'用方向鍵走動。乘法怪獸擋在橋前，打敗牠才能去別人的島。';ch.innerHTML='';}
 var Q=[
- {q:'有 6 顆糖果，要平均放進 3 個盒子。每盒放幾顆？',c:['2 顆','3 顆','6 顆'],a:0,hint:'先試試看：如果每盒放 3 顆，3 個盒子要幾顆糖果？夠不夠 6 顆？'},
+ {q:'有 6 顆糖果，要平均放進 3 個盒子。每盒放幾顆？',c:['2 顆','3 顆','6 顆'],a:0,hint:'先試試看：如果每盒放 3 顆，3 個盒子要幾顆糖果？有沒有 6 顆？'},
  {q:'3 盒糖果，每盒 4 顆，一共幾顆？',c:['7 顆','12 顆','34 顆'],a:1,hint:'三盒疊起來，你可以怎麼算？先說說你的想法。'},
  {q:'阿哲說「6 × 3 和 3 × 6 的結果不一樣」，你同意嗎？',c:['同意','不同意，結果一樣'],a:1,hint:'畫畫看：6 排、每排 3 個，再把圖轉個方向看看。'}];
 var QMUL=Q.slice();
@@ -223,7 +223,7 @@ function record(chars){roll();U.n++;U.cls++;U.min.push(Date.now());var nt=0.02+c
 function stubReply(q){if(/乘|×|x|X/.test(q))return '想想看：乘法可以看成「幾個一樣多的東西」加在一起。你可以先畫出來嗎？';
   if(/糖|盒|分/.test(q))return '先說說看：總共有幾個？要分成幾份？每一份應該一樣多嗎？';
   if(/不會|不懂|難/.test(q))return '沒關係。我們先拆成小步驟：你已經知道哪一部分了？';
-  return '你說「'+q.slice(0,20)+'」。你覺得第一步可以先做什麼？用自己的話說說看，我們再一起檢查。';}
+  return '你說「'+q.slice(0,20)+'」。你覺得第一步可以先做什麼？用自己的話說說看，我們再一起確認。';}
 var CFG=window.PX_CONFIG||{};
 function endpoint(){var ep='';try{ep=localStorage.getItem('pxclass_endpoint')||'';}catch(e){}if(!ep)ep=CFG.backend||'';return ep.replace(/\/+$/,'');}
 function aiReply(q){return new Promise(function(res){var ep=endpoint();
@@ -256,7 +256,7 @@ function renderGoogleGate(el){el.innerHTML='<div class="note" style="margin-top:
 function renderGate(el){if(CFG.googleClientId){renderGoogleGate(el);return;}
   el.innerHTML='<div class="note" style="margin-top:8px">老師後台只開放白名單帳號：</div><ul class="note" style="margin:4px 0 8px;padding-left:18px">'+WL.map(function(w){return '<li>'+w+'</li>';}).join('')+'</ul>'
   +'<form id="admf" class="askf"><input id="admin" type="email" placeholder="輸入 Google 帳號" autocomplete="off"><button type="submit">登入</button></form><div class="note warn" id="admmsg" style="margin-top:6px">'+admMsg+'</div>'
-  +'<div class="note" style="margin-top:6px">示意：靜態網頁無法真的驗證 Google 身分，這裡只是展示流程。正式版改用 Google 登入，白名單由伺服器規則檢查，不放在前端。</div>';
+  +'<div class="note" style="margin-top:6px">示意：靜態網頁無法真的驗證 Google 身分，這裡只是展示流程。正式版改用 Google 登入，白名單由伺服器規則確認，不放在前端。</div>';
   document.getElementById('admf').onsubmit=function(e){e.preventDefault();var v=document.getElementById('admin').value.trim().toLowerCase();
     if(WL.indexOf(v)>=0){admEmail=v;admMsg='';try{sessionStorage.setItem('pxclass_adm',v);}catch(x){}}else{admMsg='這個帳號不在白名單，無法進入後台。';}renderAdm();};}
 function renderAdm(){var el=document.getElementById('admbody');if(!el||!document.getElementById('adm').open)return;roll();
@@ -266,15 +266,15 @@ function renderAdm(){var el=document.getElementById('admbody');if(!el||!document
   el.innerHTML='<div class="ag"><div class="c">今天 AI 對話<b>'+U.cls+'</b>全班上限 '+CAPS.classDay+'（'+p1+'%）</div><div class="c">你今天的次數<b>'+U.n+'</b>每人上限 '+CAPS.perDay+'／每分鐘 '+CAPS.perMin+'</div><div class="c">今天估計費用<b>NT$ '+U.nt.toFixed(2)+'</b>本月 NT$ '+U.monNT.toFixed(2)+'／'+CAPS.monthNT+'（'+p2+'%）</div><div class="c">資料傳輸<b>'+(U.bytes/1024).toFixed(1)+' KB</b>每天免費額度 360 MB（'+p3+'%）</div><div class="c">狀態<b class="'+st[1]+'">'+st[0]+'</b>80% 通知老師，100% 改離線題庫</div></div>'
   +'<div class="ag"><div class="c">每人每天<input type="number" min="1" data-k="perDay" value="'+CAPS.perDay+'"></div><div class="c">每人每分鐘<input type="number" min="1" data-k="perMin" value="'+CAPS.perMin+'"></div><div class="c">全班每天<input type="number" min="1" data-k="classDay" value="'+CAPS.classDay+'"></div><div class="c">每月費用上限（NT$）<input type="number" min="1" data-k="monthNT" value="'+CAPS.monthNT+'"></div></div>'
   +'<div class="ag" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr))"><button id="bpause" class="main">'+(CAPS.pause?'恢復 AI 對話':'緊急暫停 AI')+'</button><button id="bsim">模擬全班 +500 次</button><button id="breset">重設今日用量</button></div>'
-  +'<div class="c" style="margin-top:8px;background:var(--soft);border:2px solid var(--btn);padding:8px;font-size:13px"><b>連線後端（真實 Gemini）</b><div class="askf" style="margin-top:6px"><input id="epin" placeholder="例：http://127.0.0.1:18791（空白＝示意回覆）" value="'+endpoint()+'"><button id="epsave">儲存</button></div><div class="askf" style="margin-top:6px"><input id="newkey" type="password" autocomplete="off" placeholder="貼上新的 Gemini 金鑰（只送到後端，不顯示、不保存在這裡）"><button id="keysave">更換金鑰</button></div><div class="askf" style="margin-top:6px"><button id="deidbtn">去識別化：讀取中…</button><input id="names" placeholder="要遮蔽的姓名（用逗號分隔，例：王小明,陳美麗）"><button id="namesave">存姓名</button></div><div class="note" style="margin-top:6px">去識別化開啟時：學生代號轉成不可逆的代稱、不保存對照表；送給 AI 與寫入紀錄前，會遮蔽電話、email、網址、長串數字與上面列的姓名。關閉時照原樣記錄。切換不會改寫已存的舊資料。</div><div class="note" id="epmsg" style="margin-top:6px"></div></div>'
+  +'<div class="c" style="margin-top:8px;background:var(--soft);border:2px solid var(--btn);padding:8px;font-size:13px"><b>連線後端（真實 Gemini）</b><div class="askf" style="margin-top:6px"><input id="epin" placeholder="例：http://127.0.0.1:18791（空白＝示意回覆）" value="'+endpoint()+'"><button id="epsave">儲存</button></div><div class="askf" style="margin-top:6px"><input id="newkey" type="password" autocomplete="off" placeholder="貼上新的 Gemini 金鑰（只送到後端，不顯示、不保存在這裡）"><button id="keysave">更換金鑰</button></div><div class="askf" style="margin-top:6px"><button id="deidbtn">去識別化：讀取中…</button><input id="names" placeholder="要遮蔽的姓名（用逗號分隔，例：王小明,陳美麗）"><button id="namesave">存姓名</button></div><div class="note" style="margin-top:6px">去識別化打開時：學生代號轉成不可逆的代稱、不保存對照表；送給 AI 與寫入紀錄前，會遮蔽電話、email、網址、長串數字與上面列的姓名。關閉時照原樣記錄。切換不會改寫已存的舊資料。</div><div class="note" id="epmsg" style="margin-top:6px"></div></div>'
   +'<div class="c" style="margin-top:8px;background:var(--soft);border:2px solid var(--btn);padding:8px;font-size:13px"><b>大地圖：島嶼開放</b><label style="display:flex;gap:6px;align-items:center;margin:6px 0"><input type="checkbox" id="pvchk"'+(window.__pvOn()?' checked':'')+'><b>老師預覽模式</b>（所有島都開放、迷霧全開，用來確認每座島裡面長什麼樣子；學生看不到這個開關）</label><div class="note" style="margin:4px 0">勾起來＝老師開放。學生還要滿足前置挑戰（括號內）才進得去；沒開放的島被濃霧包住。</div>'+window.__islesAdmin()+'</div>'
   +'<div class="c" style="margin-top:8px;background:var(--soft);border:2px solid var(--btn);padding:8px;font-size:13px"><b>教室配置（目前：'+room.name+'）</b><div class="note" style="margin:4px 0">老師上架教材後，系統會依主題配一間教室。這裡先列出現成的八種配置，點一下就換過去。</div><div class="ag" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr))">'+Object.keys(ROOMS).map(function(k){return '<button data-room="'+k+'"'+(k===room.id?' class="main"':'')+'>'+ROOMS[k].name+'<br><span style="font-size:11px">'+ROOMS[k].layout+'</span></button>';}).join('')+'</div></div>'
   +'<div class="c" style="margin-top:8px;background:var(--soft);border:2px solid var(--btn);padding:8px;font-size:13px"><b>天氣與時間</b><div class="note" style="margin:4px 0">時間預設跟著裝置時鐘；天氣依日期自動變化。上課示範時可以固定下來。下雨走路會慢一點；夜晚與起霧時，大地圖的視野比較小。</div><div class="askf"><span class="note">時間</span><select id="wxtm">'+Object.keys(WX.tm).map(function(k){return '<option value="'+k+'"'+(k===WX.cfg.tm?' selected':'')+'>'+WX.tm[k]+'</option>';}).join('')+'</select><span class="note">天氣</span><select id="wxwx"><option value="auto"'+(WX.cfg.wx==='auto'?' selected':'')+'>自動</option>'+Object.keys(WX.names).map(function(k){return '<option value="'+k+'"'+(k===WX.cfg.wx?' selected':'')+'>'+WX.names[k]+'</option>';}).join('')+'</select></div></div>'
   +window.__wizHtml()
   +'<details class="c" id="qdet" style="margin-top:8px;background:var(--soft);border:2px solid var(--btn);padding:8px;font-size:13px"><summary><b>題庫編輯（助教任務與三種怪獸的題目）</b></summary><div class="note" style="margin:6px 0">需先連線後端。儲存後學生重新整理頁面就會看到新題目；最近 10 版會保留。</div><div id="qed"></div><div class="note" id="qmsg" style="margin-top:6px"></div></details>'
-  +'<div style="margin-top:8px">'+"<details class=\"log\" open><summary>更新日誌（最新在前）</summary><ul class=\"lg\"><li><span class=\"tm\">10/26 15:49</span><span class=\"tt\">島嶼開放與天氣改成全班共用<span class=\"tg adj\">調整</span></span><span class=\"ds\">老師在後台勾選開放哪些島、固定天氣與時間，現在會存到後端，全班學生重新整理後都看得到（之前只存在老師自己的瀏覽器）。後台會顯示「已同步給全班」或失敗原因。老師預覽模式仍只影響老師自己。後端資料改存雲端，不會因主機重開而歸零。</span></li><li><span class=\"tm\">10/26 15:49</span><span class=\"tt\">每題都有解題步驟<span class=\"tg\">新增</span></span><span class=\"ds\">全部 30 題補上解題步驟：同一題答錯第二次時，助教改用這一題自己的步驟帶著想，最後一步留給學生算。老師後台的題庫編輯器多了「解題步驟」欄（120 字內，選填），存檔會一起保存。另修正：上一版讓後台用量統計出錯的小問題。</span></li><li><span class=\"tm\">10/26 15:49</span><span class=\"tt\">答錯分兩層提示、上方資訊列精簡<span class=\"tg adj\">調整</span></span><span class=\"ds\">答錯第一次給提示；同一題再錯，助教帶你一步一步想，並把試過的錯誤選項拿掉，答案留在最後一層。靠提示答對得 15 經驗（一次答對 25）。怪獸關卡同樣分層。畫面上方只留「任務進度」與「今天答對幾題」，等級與經驗收進背包與排行；手機上不再擠成直排。</span></li><li><span class=\"tm\">10/26 15:49</span><span class=\"tt\">介面最佳化（依 UI 研究）<span class=\"tg adj\">調整</span></span><span class=\"ds\">依 46 條研究建議先做高優先項：按鈕與分頁加大（至少 48 到 56 像素）、對話字級 16、答對答錯加 ✔ ✘、手機瀏海安全區、避免誤觸縮放、大地圖三態（未探索深藍灰加問號／鎖定灰白加鎖／已探索彩色）、位置標記改用角色頭像、地圖上的島可直接點開預覽。部署網頁補上手機縮放設定。</span></li><li><span class=\"tm\">10/26 15:49</span><span class=\"tt\">後端上線<span class=\"tg\">新增</span></span><span class=\"ds\">AI 助教的後端已部署在我們的 Google Cloud（台灣區），金鑰放在 Secret Manager。要登入的老師才能呼叫，每人每天與全班的次數、費用上限、緊急暫停都已就位。網頁上的助教對話改走真實的 Gemini。</span></li></ul><details class=\"old\"><summary>更早的紀錄（19 筆）</summary><ul class=\"lg\"><li><span class=\"tm\">10/26 15:49</span><span class=\"tt\">電腦版改用鍵盤與滑鼠<span class=\"tg adj\">調整</span></span><span class=\"ds\">電腦版不再顯示手機用的螢幕按鈕：WASD 或方向鍵移動、點地面走過去、點物件走過去並調查、對話選項按數字鍵、M R G Q I B 切換分頁、Esc 關閉。畫面分成左邊遊戲、右邊選單與對話。手機維持螢幕按鈕。更新日誌也移到老師後台。</span></li><li><span class=\"tm\">10/26 15:49</span><span class=\"tt\">每座島都能看一眼<span class=\"tg\">新增</span></span><span class=\"ds\">大地圖每座島都可以「看一眼」：看教室預覽、怎麼才進得去、現在缺什麼。老師後台有「老師預覽模式」，一鍵進入所有島。</span></li><li><span class=\"tm\">10/26 15:49</span><span class=\"tt\">首頁 QR 碼<span class=\"tg\">新增</span></span><span class=\"ds\">首頁與登入畫面都有 QR 碼，手機掃一下就能進來玩（網址：scatjay.github.io/math-island）。</span></li><li><span class=\"tm\">10/26 15:49</span><span class=\"tt\">大地圖與戰爭迷霧<span class=\"tg\">新增</span></span><span class=\"ds\">在乘法群島橋邊的小船出海，是一張約 4.7 個畫面寬的大海。走過的地方迷霧才散開；沒開放的島被濃霧包住、外面還有走不進去的迷霧牆。島要「老師開放」加上「完成前置挑戰」才進得去。「離島」分頁可看整張地圖。</span></li><li><span class=\"tm\">10/26 15:49</span><span class=\"tt\">八種主題教室<span class=\"tg\">新增</span></span><span class=\"ds\">乘法排排坐、加法小組島、除法 U 形、分數圓桌、時鐘、小商店、圖形積木角、統計看板。每間配置不同、有自己的助教題目；老師後台可一鍵切換。</span></li><li><span class=\"tm\">10/26 15:49</span><span class=\"tt\">天氣與時間<span class=\"tg\">新增</span></span><span class=\"ds\">時間跟著裝置時鐘（早上白天、晚上夜色），天氣每 90 分鐘依日期變化：晴、多雲、雨、起霧、雷雨。下雨走路變慢；夜晚與起霧時大地圖視野變小。老師可固定時間與天氣。</span></li><li><span class=\"tm\">10/26 15:49</span><span class=\"tt\">上架新教室（模擬）<span class=\"tg\">新增</span></span><span class=\"ds\">老師後台可模擬「放進教材、照片、參考資料 → 系統解析 → 配出教室、題目與迷思怪獸 → 預覽並上架」，有八種主題的示範教材包。</span></li><li><span class=\"tm\">10/26 11:10</span><span class=\"tt\">登入畫面<span class=\"tg\">新增</span></span><span class=\"ds\">進入遊戲前要先用 Google 帳號登入（Firebase 認證）。目前只開放兩位老師；進度會依帳號分開存。</span></li><li><span class=\"tm\">10/26 11:05</span><span class=\"tt\">淺色配色與日誌位置<span class=\"tg adj\">調整</span></span><span class=\"ds\">整體改成淺色底，按鈕、對話框、後台都重新配色；更新日誌移到遊戲下方。</span></li><li><span class=\"tm\">10/26 10:20</span><span class=\"tt\">題庫編輯器<span class=\"tg\">新增</span></span><span class=\"ds\">老師後台可改助教任務與三種怪獸的題目、選項、正解與提示，也能新增、刪除、還原預設。只有白名單帳號能存，保留最近 10 版；遊戲內的題數不再寫死。</span></li><li><span class=\"tm\">10/26 06:55</span><span class=\"tt\">關卡進程<span class=\"tg\">新增</span></span><span class=\"ds\">打倒乘法怪獸後，小美島出現加法怪獸、阿哲島出現除法怪獸，各三題；全部打倒得「怪獸剋星」徽章。</span></li><li><span class=\"tm\">10/26 06:40</span><span class=\"tt\">像素特效<span class=\"tg\">新增</span></span><span class=\"ds\">答對星星爆開、升級光柱、開寶箱閃光、打倒怪獸爆炸、走路灰塵、答錯畫面微震（系統設定為減少動態時不震動）。</span></li><li><span class=\"tm\">10/26 06:23</span><span class=\"tt\">對話頭像<span class=\"tg\">新增</span></span><span class=\"ds\">機器人助教、老師、四位同學與三種怪獸，說話時對話框右上角會出現它們的像素頭像。</span></li><li><span class=\"tm\">10/26 06:21</span><span class=\"tt\">8 位元音效<span class=\"tg\">新增</span></span><span class=\"ds\">走路、對話、答對、答錯、升級、開寶箱、開門、打倒怪獸、切換分頁都有聲音，右上角可靜音；第一次操作後才會出聲。</span></li><li><span class=\"tm\">10/26 06:01</span><span class=\"tt\">底部六個分頁<span class=\"tg\">新增</span></span><span class=\"ds\">地圖、排行、小組、任務板、離島、背包。任務、離島、背包跟著進度變化；排行與小組目前是示意資料。</span></li><li><span class=\"tm\">10/26 05:37</span><span class=\"tt\">手繪像素角色<span class=\"tg adj\">調整</span></span><span class=\"ds\">玩家與同學四方向走路；教室有老師、兩位同學、任務板；島上有房屋、樹、寶箱與怪獸。</span></li><li><span class=\"tm\">10/26 00:07</span><span class=\"tt\">問助教與流量上限<span class=\"tg\">新增</span></span><span class=\"ds\">可自由提問；每人每分鐘、每天、全班、每月費用都有上限，並有一鍵緊急暫停，超過會改出離線題庫。</span></li><li><span class=\"tm\">10/25 23:36</span><span class=\"tt\">島嶼地圖<span class=\"tg\">新增</span></span><span class=\"ds\">教室下方的門可以出發去「我的島」。乘法怪獸擋在橋前，連續答對才能過橋；小美、阿哲的島各有一個求助任務。</span></li><li><span class=\"tm\">10/25 22:43</span><span class=\"tt\">第一版可玩原型<span class=\"tg\">新增</span></span><span class=\"ds\">方向鍵或 WASD 移動，靠近物件按 E 調查。有碰撞、助教三題任務、經驗值與等級，進度存在本機。</span></li></ul></details><div class=\"lgfoot\">素材：教室圖磚來自 Kenney Roguelike／RPG pack（CC0），黑板與角色是手繪像素。</div></details>".replace('<details class="log" open>','<details class="log">')+'</div>'
+  +'<div style="margin-top:8px">'+"<details class=\"log\" open><summary>更新日誌（最新在前）</summary><ul class=\"lg\"><li><span class=\"tm\">10/26 17:57</span><span class=\"tt\">像素字型缺字修正<span class=\"tg adj\">調整</span></span><span class=\"ds\">逐字比對畫面上會出現的字：像素字型 DotGothic16 原本缺四個中文與日文寫法不同的字，會變成另一種字體夾在中間。用到的地方已換成意思相同、字型有的詞，例如主按鈕改成「看看 E」。現在畫面上的字全部是像素字。</span></li><li><span class=\"tm\">10/26 17:57</span><span class=\"tt\">島嶼開放與天氣改成全班共用<span class=\"tg adj\">調整</span></span><span class=\"ds\">老師在後台勾選開放哪些島、固定天氣與時間，現在會存到後端，全班學生重新整理後都看得到（之前只存在老師自己的瀏覽器）。後台會顯示「已同步給全班」或失敗原因。老師預覽模式仍只影響老師自己。後端資料改存雲端，不會因主機重開而歸零。</span></li><li><span class=\"tm\">10/26 17:57</span><span class=\"tt\">每題都有解題步驟<span class=\"tg\">新增</span></span><span class=\"ds\">全部 30 題補上解題步驟：同一題答錯第二次時，助教改用這一題自己的步驟帶著想，最後一步留給學生算。老師後台的題庫編輯器多了「解題步驟」欄（120 字內，選填），存檔會一起保存。另修正：上一版讓後台用量統計出錯的小問題。</span></li><li><span class=\"tm\">10/26 17:57</span><span class=\"tt\">答錯分兩層提示、上方資訊列精簡<span class=\"tg adj\">調整</span></span><span class=\"ds\">答錯第一次給提示；同一題再錯，助教帶你一步一步想，並把試過的錯誤選項拿掉，答案留在最後一層。靠提示答對得 15 經驗（一次答對 25）。怪獸關卡同樣分層。畫面上方只留「任務進度」與「今天答對幾題」，等級與經驗收進背包與排行；手機上不再擠成直排。</span></li><li><span class=\"tm\">10/26 17:57</span><span class=\"tt\">介面最佳化（依 UI 研究）<span class=\"tg adj\">調整</span></span><span class=\"ds\">依 46 條研究建議先做高優先項：按鈕與分頁加大（至少 48 到 56 像素）、對話字級 16、答對答錯加 ✔ ✘、手機瀏海安全區、避免誤觸縮放、大地圖三態（未探索深藍灰加問號／鎖定灰白加鎖／已探索彩色）、位置標記改用角色頭像、地圖上的島可直接點開預覽。部署網頁補上手機縮放設定。</span></li></ul><details class=\"old\"><summary>更早的紀錄（20 筆）</summary><ul class=\"lg\"><li><span class=\"tm\">10/26 17:57</span><span class=\"tt\">後端上線<span class=\"tg\">新增</span></span><span class=\"ds\">AI 助教的後端已部署在我們的 Google Cloud（台灣區），金鑰放在 Secret Manager。要登入的老師才能呼叫，每人每天與全班的次數、費用上限、緊急暫停都已就位。網頁上的助教對話改走真實的 Gemini。</span></li><li><span class=\"tm\">10/26 17:57</span><span class=\"tt\">電腦版改用鍵盤與滑鼠<span class=\"tg adj\">調整</span></span><span class=\"ds\">電腦版不再顯示手機用的螢幕按鈕：WASD 或方向鍵移動、點地面走過去、點物件走過去並看看、對話選項按數字鍵、M R G Q I B 切換分頁、Esc 關閉。畫面分成左邊遊戲、右邊選單與對話。手機維持螢幕按鈕。更新日誌也移到老師後台。</span></li><li><span class=\"tm\">10/26 17:57</span><span class=\"tt\">每座島都能看一眼<span class=\"tg\">新增</span></span><span class=\"ds\">大地圖每座島都可以「看一眼」：看教室預覽、怎麼才進得去、現在缺什麼。老師後台有「老師預覽模式」，一鍵進入所有島。</span></li><li><span class=\"tm\">10/26 17:57</span><span class=\"tt\">首頁 QR 碼<span class=\"tg\">新增</span></span><span class=\"ds\">首頁與登入畫面都有 QR 碼，手機掃一下就能進來玩（網址：scatjay.github.io/math-island）。</span></li><li><span class=\"tm\">10/26 17:57</span><span class=\"tt\">大地圖與戰爭迷霧<span class=\"tg\">新增</span></span><span class=\"ds\">在乘法群島橋邊的小船出海，是一張約 4.7 個畫面寬的大海。走過的地方迷霧才散開；沒開放的島被濃霧包住、外面還有走不進去的迷霧牆。島要「老師開放」加上「完成前置挑戰」才進得去。「離島」分頁可看整張地圖。</span></li><li><span class=\"tm\">10/26 17:57</span><span class=\"tt\">八種主題教室<span class=\"tg\">新增</span></span><span class=\"ds\">乘法排排坐、加法小組島、除法 U 形、分數圓桌、時鐘、小商店、圖形積木角、統計看板。每間配置不同、有自己的助教題目；老師後台可一鍵切換。</span></li><li><span class=\"tm\">10/26 17:57</span><span class=\"tt\">天氣與時間<span class=\"tg\">新增</span></span><span class=\"ds\">時間跟著裝置時鐘（早上白天、晚上夜色），天氣每 90 分鐘依日期變化：晴、多雲、雨、起霧、雷雨。下雨走路變慢；夜晚與起霧時大地圖視野變小。老師可固定時間與天氣。</span></li><li><span class=\"tm\">10/26 17:57</span><span class=\"tt\">上架新教室（模擬）<span class=\"tg\">新增</span></span><span class=\"ds\">老師後台可模擬「放進教材、照片、參考資料 → 系統解析 → 配出教室、題目與迷思怪獸 → 預覽並上架」，有八種主題的示範教材包。</span></li><li><span class=\"tm\">10/26 11:10</span><span class=\"tt\">登入畫面<span class=\"tg\">新增</span></span><span class=\"ds\">進入遊戲前要先用 Google 帳號登入（Firebase 認證）。目前只開放兩位老師；進度會依帳號分開存。</span></li><li><span class=\"tm\">10/26 11:05</span><span class=\"tt\">淺色配色與日誌位置<span class=\"tg adj\">調整</span></span><span class=\"ds\">整體改成淺色底，按鈕、對話框、後台都重新配色；更新日誌移到遊戲下方。</span></li><li><span class=\"tm\">10/26 10:20</span><span class=\"tt\">題庫編輯器<span class=\"tg\">新增</span></span><span class=\"ds\">老師後台可改助教任務與三種怪獸的題目、選項、正解與提示，也能新增、刪除、還原預設。只有白名單帳號能存，保留最近 10 版；遊戲內的題數不再寫死。</span></li><li><span class=\"tm\">10/26 06:55</span><span class=\"tt\">關卡進程<span class=\"tg\">新增</span></span><span class=\"ds\">打倒乘法怪獸後，小美島出現加法怪獸、阿哲島出現除法怪獸，各三題；全部打倒得「怪獸剋星」徽章。</span></li><li><span class=\"tm\">10/26 06:40</span><span class=\"tt\">像素特效<span class=\"tg\">新增</span></span><span class=\"ds\">答對星星爆開、升級光柱、開寶箱閃光、打倒怪獸爆炸、走路灰塵、答錯畫面微震（系統設定為減少動態時不震動）。</span></li><li><span class=\"tm\">10/26 06:23</span><span class=\"tt\">對話頭像<span class=\"tg\">新增</span></span><span class=\"ds\">機器人助教、老師、四位同學與三種怪獸，說話時對話框右上角會出現它們的像素頭像。</span></li><li><span class=\"tm\">10/26 06:21</span><span class=\"tt\">8 位元音效<span class=\"tg\">新增</span></span><span class=\"ds\">走路、對話、答對、答錯、升級、開寶箱、開門、打倒怪獸、切換分頁都有聲音，右上角可靜音；第一次操作後才會出聲。</span></li><li><span class=\"tm\">10/26 06:01</span><span class=\"tt\">底部六個分頁<span class=\"tg\">新增</span></span><span class=\"ds\">地圖、排行、小組、任務板、離島、背包。任務、離島、背包跟著進度變化；排行與小組目前是示意資料。</span></li><li><span class=\"tm\">10/26 05:37</span><span class=\"tt\">手繪像素角色<span class=\"tg adj\">調整</span></span><span class=\"ds\">玩家與同學四方向走路；教室有老師、兩位同學、任務板；島上有房屋、樹、寶箱與怪獸。</span></li><li><span class=\"tm\">10/26 00:07</span><span class=\"tt\">問助教與流量上限<span class=\"tg\">新增</span></span><span class=\"ds\">可自由提問；每人每分鐘、每天、全班、每月費用都有上限，並有一鍵緊急暫停，超過會改出離線題庫。</span></li><li><span class=\"tm\">10/25 23:36</span><span class=\"tt\">島嶼地圖<span class=\"tg\">新增</span></span><span class=\"ds\">教室下方的門可以出發去「我的島」。乘法怪獸擋在橋前，連續答對才能過橋；小美、阿哲的島各有一個求助任務。</span></li><li><span class=\"tm\">10/25 22:43</span><span class=\"tt\">第一版可玩原型<span class=\"tg\">新增</span></span><span class=\"ds\">方向鍵或 WASD 移動，靠近物件按 E 看看。有碰撞、助教三題任務、經驗與等級，進度存在本機。</span></li></ul></details><div class=\"lgfoot\">素材：教室圖磚來自 Kenney Roguelike／RPG pack（CC0），黑板與角色是手繪像素。</div></details>".replace('<details class="log" open>','<details class="log">')+'</div>'
   +'<div class="ag" style="grid-template-columns:1fr"><button id="badmout">登出（'+admEmail+'）</button></div>'
-  +'<div class="note" style="margin-top:8px">示意：用量存在這台瀏覽器；真實版要放伺服器端，金鑰只存後台，並在 Google 後台另設預算警示。單價是示意值。</div>';
+  +'<div class="note" style="margin-top:8px">示意：用量存在這台瀏覽器；真實版要放伺服器端，金鑰只存後台，並在 Google 後台另設預算警示。單價是示意數字。</div>';
   Array.prototype.forEach.call(el.querySelectorAll('input[data-k]'),function(i){i.onchange=function(){var v=Math.max(1,parseInt(i.value,10)||1);CAPS[i.dataset.k]=v;saveU();renderAdm();};});
   var epm=document.getElementById('epmsg');
   function srv(path,body,cb){(window.PX_USER?window.PX_USER.getToken().then(function(t){admToken=t;}):Promise.resolve()).then(function(){srv0(path,body,cb);});}
@@ -282,9 +282,9 @@ function renderAdm(){var el=document.getElementById('admbody');if(!el||!document
   document.getElementById('epsave').onclick=function(){var v=document.getElementById('epin').value.trim();try{if(v)localStorage.setItem('pxclass_endpoint',v);else localStorage.removeItem('pxclass_endpoint');}catch(x){}
     if(!v){epm.textContent='已改回示意回覆。';return;}srv('/health',null,function(c,d){epm.textContent=c===200?('後端連線成功；金鑰'+(d.hasKey?'已設定':'尚未設定')+'；模型 '+d.model):'連線失敗。';if(c===200)loadDeid();});};
   var deidState=null;
-  function loadDeid(){srv('/admin/usage',null,function(c,d){var b=document.getElementById('deidbtn');if(!b)return;if(c===200){deidState=!!d.deid;b.textContent='去識別化：'+(deidState?'開（點一下關閉）':'關（點一下開啟）');}else b.textContent='去識別化：無法讀取';});}
+  function loadDeid(){srv('/admin/usage',null,function(c,d){var b=document.getElementById('deidbtn');if(!b)return;if(c===200){deidState=!!d.deid;b.textContent='去識別化：'+(deidState?'開（點一下關閉）':'關（點一下打開）');}else b.textContent='去識別化：無法讀取';});}
   if(endpoint())loadDeid();else document.getElementById('deidbtn').textContent='去識別化：先設定後端';
-  document.getElementById('deidbtn').onclick=function(){if(deidState===null)return;srv('/admin/caps',{deid:!deidState},function(c,d){if(c===200){epm.textContent='已'+(d.caps.deid?'開啟':'關閉')+'去識別化。';loadDeid();}else epm.textContent=d.error||'切換失敗';});};
+  document.getElementById('deidbtn').onclick=function(){if(deidState===null)return;srv('/admin/caps',{deid:!deidState},function(c,d){if(c===200){epm.textContent='已'+(d.caps.deid?'打開':'關閉')+'去識別化。';loadDeid();}else epm.textContent=d.error||'切換失敗';});};
   document.getElementById('namesave').onclick=function(){var arr=document.getElementById('names').value.split(/[,，、\s]+/).filter(Boolean);srv('/admin/caps',{nameList:arr},function(c,d){epm.textContent=c===200?('已儲存 '+d.caps.nameList.length+' 個要遮蔽的姓名。'):(d.error||'儲存失敗');document.getElementById('names').value='';});};
   document.getElementById('keysave').onclick=function(){var k=document.getElementById('newkey').value.trim();if(!k){epm.textContent='請先貼上金鑰。';return;}
     srv('/admin/key',{key:k},function(c,d){document.getElementById('newkey').value='';epm.textContent=c===200?('金鑰已更換並驗證可用（末四碼 '+d.last4+'）。'):(d.error||'更換失敗');});};
@@ -740,49 +740,49 @@ var PACKS=[
  {room:'frac',title:'三年級上：分數（等分與單位分數）',topic:'分數',
   inputs:[['📷','課本第 62–64 頁照片 ×3（有點歪、有反光）'],['📷','習作第 38 頁照片（有學生手寫與姓名）'],['📄','自編學習單：披薩等分.pdf'],['🔗','教學影片連結（網路影片）']],
   note:'班上很多人覺得「分母越大，分數越大」。',
-  steps:['讀取 4 份教材','辨識課本與習作照片的文字（已自動校正歪斜與反光）','抽出 12 題，整理出 3 個概念：等分、單位分數、分母越大每份越小','對照課綱與常見迷思，找到「分母越大分數越大」','檢查個資：習作照片出現學生姓名，已遮蔽','檢查版權：影片只當參考，不抽題'],
+  steps:['讀取 4 份教材','辨識課本與習作照片的文字（已自動校正歪斜與反光）','抽出 12 題，整理出 3 個概念：等分、單位分數、分母越大每份越小','對照課綱與常見迷思，找到「分母越大分數越大」','確認個資：習作照片出現學生姓名，已遮蔽','確認版權：影片只當參考，不抽題'],
   flags:['習作照片有姓名：已遮蔽後才使用','影片連結版權不明：只當參考，不轉成題目'],
   why:'分數要大家一起比一比、切一切，所以用「圓桌」：四人圍著披薩討論，助教在中間巡。',monster:['分母怪','堅持分母越大分數就越大，答對才會縮小']},
  {room:'mul',title:'二年級：九九乘法與乘法意義',topic:'乘法',
   inputs:[['📄','九九乘法學習單.docx'],['📷','點點陣列的黑板照片 ×2'],['📊','上週小考成績.xlsx（有姓名與座號）']],
   note:'有人只會背，3×4 和 4×3 的圖畫不會分。',
-  steps:['讀取 3 份教材','抽出 9 題與 2 張陣列圖','整理概念：幾個幾、交換律、0 的乘法','常見迷思：只背誦、不懂圖像差別','檢查個資：成績表有姓名座號，改成匿名代號，只取答錯題型','版權：自編教材，可使用'],
+  steps:['讀取 3 份教材','抽出 9 題與 2 張陣列圖','整理概念：幾個幾、交換律、0 的乘法','常見迷思：只背誦、不懂圖像差別','確認個資：成績表有姓名座號，改成匿名代號，只取答錯題型','版權：自編教材，可使用'],
   flags:['成績表有姓名座號：已改成匿名代號，不進題庫'],
   why:'乘法是一排一排的「幾個幾」，用「排排坐」的教室最像陣列，一眼就看得出幾排幾個。',monster:['乘法怪獸','只會背九九，答對「幾個幾」才過']},
  {room:'add',title:'一年級下：加法與進位',topic:'加法',
   inputs:[['📊','進位加法簡報.pptx（18 頁）'],['📷','學生用積木湊十的活動照片 ×4（有人臉）'],['📄','考卷.pdf']],
   note:'想做分組合作，湊十要互相說明。',
-  steps:['讀取 3 份教材','拆開簡報 18 頁，抽出湊十的 4 個步驟','抽出 8 題（含 2 題開放說明題）','迷思：不讀題意只看「多」就加；忘記進位','檢查個資：活動照片有人臉，已自動模糊','版權：簡報有一頁引用外部圖片，標記需換圖'],
+  steps:['讀取 3 份教材','拆開簡報 18 頁，抽出湊十的 4 個步驟','抽出 8 題（含 2 題開放說明題）','迷思：不讀題意只看「多」就加；忘記進位','確認個資：活動照片有人臉，已自動模糊','版權：簡報有一頁引用外部圖片，標記需換圖'],
   flags:['照片有人臉：已模糊處理','簡報第 11 頁外部圖片：已標記，上線前要換成自繪或授權圖'],
   why:'湊十需要兩人互相說明，用「小組島」：兩張桌子併成一組，坐在一起討論。',monster:['加法怪獸','不肯進位，答對湊十才讓路']},
  {room:'div',title:'三年級下：除法（平分與包含除）',topic:'除法',
   inputs:[['📄','除法學習單.pdf'],['🔗','分糖果的影片連結'],['📷','課本頁照片 ×2']],
   note:'學生分不清「每人幾個」和「可以分給幾人」。',
-  steps:['讀取 3 份教材','辨識課本頁文字','抽出 10 題，分成平分與包含除兩類','迷思：顛倒被除數與除數；餘數不懂代表什麼','檢查個資：無','版權：課本頁只能當參考，題目改寫成新題'],
+  steps:['讀取 3 份教材','辨識課本頁文字','抽出 10 題，分成平分與包含除兩類','迷思：顛倒被除數與除數；餘數不懂代表什麼','確認個資：無','版權：課本頁只能當參考，題目改寫成新題'],
   flags:['課本頁版權所有：只能改寫成新題，不能直接貼上'],
   why:'平分與包含除要「換位置看」，用「U 形」：中間留空地讓學生站出來演分糖果，助教在中央。',monster:['除法怪獸','分不平的人過不去，答對「平分」才放行']},
  {room:'clock',title:'二年級下：時間與時鐘',topic:'時間',
   inputs:[['📄','時鐘學習單.docx'],['📷','教室牆上時鐘的照片'],['📷','學生課表照片（有姓名）']],
   note:'時針分針常搞反；想用上課時間當例子。',
-  steps:['讀取 3 份教材','辨識時鐘照片的指針位置','抽出 9 題，另用課表產生「下課時間」情境題','迷思：時針分針搞反；一小時當 100 分鐘','檢查個資：課表有姓名，已遮蔽','版權：自編與自拍，可使用'],
+  steps:['讀取 3 份教材','辨識時鐘照片的指針位置','抽出 9 題，另用課表產生「下課時間」情境題','迷思：時針分針搞反；一小時當 100 分鐘','確認個資：課表有姓名，已遮蔽','版權：自編與自拍，可使用'],
   flags:['課表有姓名：已遮蔽'],
   why:'時間要「看著鐘說」，用「中央時鐘」：地板中間放一個大時鐘，學生圍著它撥針、報時間。',monster:['針針怪','時針分針總搞反，把時間說對才過']},
  {room:'money',title:'二年級：錢幣與購物',topic:'錢幣與價錢',
   inputs:[['📷','超市菜單與價目表照片 ×3（有店名）'],['📷','教具硬幣照片'],['📄','小商店活動規則.docx']],
   note:'想讓學生扮演店員找零。',
-  steps:['讀取 3 份教材','辨識價目表（品名與價格）','抽出 10 題，用真實價格改成「虛構小商店」','迷思：以硬幣大小判斷價值；找零加減混淆','檢查個資：無；檢查商標：店名與商標改成虛構名稱','版權：貨幣照片只用自繪像素硬幣'],
+  steps:['讀取 3 份教材','辨識價目表（品名與價格）','抽出 10 題，用真實價格改成「虛構小商店」','迷思：以硬幣大小判斷錢的多少；找零加減混淆','確認個資：無；確認商標：店名與商標改成虛構名稱','版權：貨幣照片只用自繪像素硬幣'],
   flags:['照片有真實店名與商標：改成虛構小商店','貨幣照片：改用自繪像素硬幣'],
   why:'購物要有「櫃台」與「顧客」，用「商店」配置：右側是櫃台，左側是顧客的桌子。',monster:['找零怪','總是少找錢，算對找零才過']},
  {room:'shape',title:'一年級：平面圖形與拼組',topic:'圖形',
   inputs:[['📷','七巧板教具照片 ×2'],['📊','圖形認識.pptx'],['🔗','拼圖小遊戲連結']],
   note:'圖形換方向就不認得。',
-  steps:['讀取 3 份教材','辨識七巧板的 7 塊','抽出 8 題，含「轉向與被拉長」的圖形','迷思：換方向不認得；正方形與長方形沒關係','檢查個資：無','版權：小遊戲連結授權不明，只當參考'],
+  steps:['讀取 3 份教材','辨識七巧板的 7 塊','抽出 8 題，含「轉向與被拉長」的圖形','迷思：換方向不認得；正方形與長方形沒關係','確認個資：無','版權：小遊戲連結授權不明，只當參考'],
   flags:['拼圖小遊戲授權不明：只當參考'],
   why:'圖形要動手拼，用「積木角」：留大片空地，地上散落圖形積木，桌子靠邊。',monster:['轉向怪','換個方向就不認得，認出圖形才過']},
  {room:'stat',title:'三年級：長條圖與統計',topic:'統計圖表',
   inputs:[['📷','班級票選水果的長條圖照片'],['📄','統計學習單.docx'],['📊','班上投票結果.xlsx（含學生姓名）']],
   note:'想用班上自己的投票資料。',
-  steps:['讀取 3 份教材','讀出長條圖的數字與軸標','抽出 9 題，另產生「班級投票」情境題','迷思：只看最長那條；刻度不從 0 開始','檢查個資：投票表有姓名，只保留票數','版權：自編，可使用'],
+  steps:['讀取 3 份教材','讀出長條圖的數字與軸標','抽出 9 題，另產生「班級投票」情境題','迷思：只看最長那條；刻度不從 0 開始','確認個資：投票表有姓名，只保留票數','版權：自編，可使用'],
   flags:['投票表有姓名：只保留票數，不留姓名'],
   why:'統計要「看大圖」，用「看板」配置：兩側有圖表看板，中間留空地讓學生站著比一比。',monster:['長條怪','只看最長那一條，讀懂刻度才過']}];
 var wiz={step:0,pack:null,done:0,flags:false};
@@ -848,7 +848,7 @@ var hovT=0;cv.addEventListener('pointermove',function(e){var n=performance.now()
 // 螢幕按鈕：電腦版預設藏起來，觸控筆電可以手動開
 (function(){var k=document.querySelector('.keys');if(!k)return;var on=false;try{on=localStorage.getItem('pxclass_vpad')==='1';}catch(e){}
   document.body.classList.toggle('vpad',on);
-  k.innerHTML='<b>移動</b> WASD／方向鍵，或直接點地面　<b>調查</b> E／空白，或點物件　<b>選項</b> 數字鍵 1、2、3　<b>分頁</b> M 地圖、R 排行、G 小組、Q 任務板、I 大地圖、B 背包　<b>關閉</b> Esc　<label style="white-space:nowrap"><input type="checkbox" id="vpadchk"'+(on?' checked':'')+'> 顯示螢幕按鈕（觸控螢幕用）</label>';
+  k.innerHTML='<b>移動</b> WASD／方向鍵，或直接點地面　<b>看看</b> E／空白，或點物件　<b>選項</b> 數字鍵 1、2、3　<b>分頁</b> M 地圖、R 排行、G 小組、Q 任務板、I 大地圖、B 背包　<b>關閉</b> Esc　<label style="white-space:nowrap"><input type="checkbox" id="vpadchk"'+(on?' checked':'')+'> 顯示螢幕按鈕（觸控螢幕用）</label>';
   document.getElementById('vpadchk').onchange=function(){document.body.classList.toggle('vpad',this.checked);try{localStorage.setItem('pxclass_vpad',this.checked?'1':'0');}catch(e){}};})();
 
 // 答對／答錯不只靠聲音與顏色：句首加 ✔ 或 ✘
@@ -907,7 +907,7 @@ var STEPS={
  '小美說「5 + 8 和 8 + 5 一樣大」，你同意嗎？':'5 + 8：從 8 往後數 5 下，9、10、11、12、13。8 + 5：從 8 往後數 5 下，也數到幾？',
  '18 顆糖平均分給 3 個人，每人幾顆？':'每一輪 3 個人各拿 1 顆、用掉 3 顆。用 3、6、9、12、15、18 數數看，數到 18 一共數了幾次？',
  '24 ÷ 6 = ？':'6、12、18、24：數到 24 一共數了幾次？',
- '23 本書每 5 本綁成一捆，可以綁幾捆、剩幾本？':'5、10、15、20：綁了 4 捆、用掉 20 本；第 5 捆要 25 本，不夠。23 - 20 剩幾本？',
+ '23 本書每 5 本綁成一捆，可以綁幾捆、剩幾本？':'5、10、15、20：綁了 4 捆、用掉 20 本；第 5 捆要 25 本，超過 23 本了。23 - 20 剩幾本？',
  '一個披薩平均切成 4 塊，吃掉 1 塊，吃了這個披薩的幾分之幾？':'平均切成 4 塊，分母是 4；吃了 1 塊，分子是 1。寫成分數是哪一個？',
  '同樣大的披薩，1/2 和 1/4 哪個比較大？':'畫兩個一樣大的圓：一個切成 2 塊、一個切成 4 塊，各塗 1 塊。哪一個塗得比較多？',
  '2/4 和 1/2 一樣大嗎？':'1/2 是切成 2 塊、塗 1 塊。把每一塊再切成兩半，就變成切成 4 塊、塗了 2 塊，也就是 2/4。塗的地方有變多或變少嗎？',
@@ -967,7 +967,7 @@ function near(){var cx=player.x+5,cy=player.y+10,T=objects(),best=null,bd=1e9;
   T.forEach(function(t){var d=Math.hypot(cx-t.x,cy-t.y);if(d<t.r&&d<bd){bd=d;best=t;}});return best;}
 function act(){
   if(mode==='dlg')return;
-  var t=near();if(!t){say('提示','附近沒有可以調查的東西。');return;}
+  var t=near();if(!t){say('提示','附近沒有可以看看的東西。');return;}
   if(t.n==='robot'){mode='dlg';say('小數助教','要做任務，還是問我問題？',[{t:'做任務',f:ask},{t:'問助教',f:openAsk},{t:'再見',f:end}]);}
   else if(t.n.indexOf('port:')===0){window.__worldAct(t.n.slice(5));}
   else if(t.n==='boat'){mode='dlg';say('小船','要出海去探索大地圖嗎？海很大，迷霧裡還有很多沒去過的島。',[{t:'出海',f:function(){go('world');end();}},{t:'再等等',f:end}]);}
@@ -1018,7 +1018,7 @@ function frame(t){var dt=Math.min(0.05,(t-last)/1000);last=t;
       if(!hit(player.x+dx,player.y))player.x+=dx;if(!hit(player.x,player.y+dy))player.y+=dy;
       if(mvv&&window.__mv){if(Math.hypot(player.x-ox0,player.y-oy0)<sp*0.25)window.__mv.stuck+=dt;else window.__mv.stuck=0;}
       if(dx)player.dir=dx>0?1:-1;player.f4=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');player.step+=dt*8;}}
-  var nr=near();hintEl.textContent=(mode==='walk'&&nr)?(window.__isDesk?'▶ 按 E 調查（或直接點它）':'▶ 按 E 或「調查」'):'';
+  var nr=near();hintEl.textContent=(mode==='walk'&&nr)?(window.__isDesk?'▶ 按 E 看看（或直接點它）':'▶ 按 E 或「看看」'):'';
   ctx.clearRect(0,0,W,H);lb.hidden=(scene!=='island');if(window.__wlHide)window.__wlHide(scene!=='world');
   var list=[];
   if(scene==='classroom'){var rb=RBG[room.id]||bg;if(rb.complete)ctx.drawImage(rb,0,0);
