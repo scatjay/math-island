@@ -1,0 +1,515 @@
+<title>像素教室原型1026</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Noto+Sans+TC:wght@500;700&display=swap">
+<style>
+:root{--bg:#1E2A32;--panel:#25343D;--edge:#0F161B;--btn:#3A4D57;--fg:#E8EEF0;--dim:#B7C4CA;--gold:#F2C14E;--red:#D95B43;--green:#5FBF7A;--blue:#4B6FD6;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:'DotGothic16','Noto Sans TC',system-ui,sans-serif;padding-inline:16px;padding-block:14px 28px;line-height:1.55}
+.wrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+h1{margin:0;font-size:22px;font-weight:700}
+.sub{color:var(--dim);font-size:14px}
+details.log{background:#FFF1C7;color:#1B1B2F;border:3px solid var(--edge);padding:8px 12px;font-size:14px}
+details.log summary{cursor:pointer;font-weight:700}
+details.log ul{margin:8px 0 0;padding-left:18px}
+.stage{background:var(--panel);border:3px solid var(--edge);padding:10px;display:flex;flex-direction:column;gap:8px;align-items:center}
+.hud{width:100%;display:flex;gap:10px;align-items:center;font-size:14px}
+.hud .bar{flex:1;height:12px;background:var(--edge);border:2px solid var(--btn);min-width:60px}
+.hud .bar i{display:block;height:100%;width:0;background:var(--gold)}
+canvas{image-rendering:pixelated;image-rendering:crisp-edges;background:#000;border:3px solid var(--edge);display:block;touch-action:none}
+.hint{min-height:20px;font-size:14px;color:var(--gold)}
+.dlg{width:100%;background:var(--edge);border:3px solid var(--btn);padding:10px 12px;min-height:84px;font-size:15px;display:flex;flex-direction:column;gap:8px}
+.dlg .who{color:var(--gold);font-weight:700;font-size:13px}
+.choices{display:flex;gap:8px;flex-wrap:wrap}
+button{font:inherit;color:var(--fg);background:var(--btn);border:3px solid var(--edge);box-shadow:3px 3px 0 var(--edge);padding:8px 14px;min-height:44px;cursor:pointer}
+button:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--edge)}
+button.main{background:var(--red);color:#fff}
+.pad{width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.dpad{display:grid;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(2,52px);gap:4px}
+.dpad button{padding:0;min-height:0;font-size:20px}
+.cvw{position:relative;line-height:0}.lbl{position:absolute;color:#fff;font-family:DotGothic16,sans-serif;line-height:1.1;white-space:nowrap;pointer-events:none;text-shadow:1px 1px 0 #1B2A3A,-1px 1px 0 #1B2A3A,1px -1px 0 #1B2A3A,-1px -1px 0 #1B2A3A}[hidden]{display:none!important}.tabs canvas,.bag canvas{background:transparent;border:0;display:inline-block}.askf{width:100%;display:flex;gap:8px}.askf input{flex:1;min-width:0;font:inherit;background:var(--edge);color:var(--fg);border:3px solid var(--btn);padding:8px;min-height:44px}
+.adm{margin-top:0;align-items:stretch}.adm summary{cursor:pointer;font-weight:700}.ag{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:8px;font-size:13px}.ag .c{background:var(--edge);border:2px solid var(--btn);padding:8px;display:flex;flex-direction:column;gap:4px}.ag .c b{font-size:20px}.ag input[type=number]{width:100%;font:inherit;background:var(--panel);color:var(--fg);border:2px solid var(--btn);padding:4px;min-height:32px}.warn{color:var(--gold)}.stop{color:#ff8a75}
+.note{font-size:12px;color:var(--dim)}
+.keys{font-size:12px;color:var(--dim);text-align:center}
+@media (hover:none){.keys{display:none}}
+</style>
+<div class="wrap">
+  <div><h1>數學養成島　像素教室原型</h1><div class="sub">吳老師構想的試作：走進教室，找 AI 助教聊聊，出門去島嶼挑戰怪獸、幫同學。</div></div>
+  
+  <div class="stage">
+    <div class="hud"><span id="lv">Lv.1</span><div class="bar"><i id="xpbar"></i></div><span id="xp">0 / 50</span><span id="qn">任務 0/3</span></div>
+    <div class="cvw"><canvas id="cv" width="192" height="144" aria-label="像素教室，可用方向鍵移動"></canvas><div id="lbls"></div></div>
+    <div class="hint" id="hint"></div>
+    <div class="dlg" id="dlg"><div class="who" id="who">提示</div><div id="txt">走到機器人旁邊（黑板前），按 E 或「調查」跟牠說話。</div><div class="choices" id="ch"></div></div>
+    <form id="askf" class="askf" hidden><input id="askin" maxlength="60" placeholder="輸入你的問題（60 字內）" autocomplete="off"><button type="submit">送出</button></form>
+    <div class="pad">
+      <div class="dpad"><span></span><button data-d="up" aria-label="上">↑</button><span></span><button data-d="left" aria-label="左">←</button><button data-d="down" aria-label="下">↓</button><button data-d="right" aria-label="右">→</button></div>
+      <button class="main" id="act" style="padding:18px 22px;font-size:18px">調查　E</button>
+    </div>
+    <div class="keys">移動：方向鍵或 W A S D　調查／下一句：E、空白鍵、Enter</div>
+  </div>
+  <details class="log" open><summary>更新日誌（最新在前）</summary><ul>
+    <li><b>10/26 11:03</b>　老師後台新增題庫編輯器：可改助教任務與三種怪獸的題目、選項、正解、提示，可新增或刪除題目、還原預設；儲存後學生重新整理就看到新題（需連線後端，只有白名單帳號能改，保留最近 10 版）。遊戲內的題數不再寫死。
+    </li>
+    <li><b>10/26 06:55</b>　新增關卡進程：打倒乘法怪獸後，小美島出現加法怪獸、阿哲島出現除法怪獸，各三題（含提示、答錯重來）；全部打倒得「怪獸剋星」徽章，任務板與背包同步更新。
+    </li>
+    <li><b>10/26 06:40</b>　新增像素特效：答對星星爆開、升級光柱、開寶箱閃光、打倒怪獸爆炸、走路灰塵、答錯畫面微震（系統設定為減少動態時不震動）。
+    </li>
+    <li><b>10/26 06:23</b>　新增對話頭像：機器人助教、老師、四位同學、乘法怪獸說話時，對話框右上角會出現他們的像素頭像。
+    </li>
+    <li><b>10/26 06:21</b>　新增 8 位元合成音效（走路、對話、答對、答錯、升級、開寶箱、開門、打倒怪獸、切換分頁），經驗列旁有靜音鈕，設定會記住；第一次操作後才會出聲。
+    </li>
+    <li><b>10/26 06:01</b>　新增底部六個分頁（地圖、排行、小組、任務板、離島、背包）：排行與小組是示意資料，任務板、離島、背包都跟著你的進度即時變化；背包有三個高階思考徽章，達成條件後才解鎖。
+    </li>
+    <li><b>10/26 05:37</b>　換上新的手繪像素角色：玩家與同學四方向走路，教室有老師、兩位同學、任務板；島上有房屋、樹、寶箱與三種怪獸素材。找到寶箱得經驗，任務板會列出今天的任務。
+    </li>
+    <li><b>10/26 00:07</b>　新增「問助教」自由提問，並有真的會擋的流量上限（每分鐘、每天、全班、月費、緊急暫停）；超過就改出離線題庫。頁面最下方有老師後台（示意）可看用量、改上限。AI 回覆目前是示意回覆，之後接 Gemini。
+    </li>
+    <li><b>10/25 23:36</b>　新增島嶼地圖：教室下方的門可以出發去「我的島」。乘法怪獸擋在橋前，連續答對 3 題才能過橋；小美、阿哲的島各有一個求助任務。
+    </li>
+    <li><b>10/25 22:43</b>　第一版可玩原型：方向鍵／WASD 或螢幕方向鍵移動，靠近物件按 E 或「調查」。有碰撞、AI 助教三題任務、經驗值與等級、進度存在本機。</li>
+    <li>素材：教室圖磚來自 Kenney Roguelike／RPG pack（CC0），黑板與角色是手繪像素。</li>
+  </ul></details>
+  <details class="stage adm" id="adm"><summary>老師後台（示意）：流量監控與上限設定</summary><div id="admbody"></div></details>
+  <div class="note">試作畫面：題目與對話是示意，不是真的 AI；角色與場景都由我們自創，沒有使用既有作品。進度只存在這台裝置的瀏覽器。</div>
+</div>
+<script src="config.js"></script>
+<script>
+(function(){
+var BG="data:image/png;base64,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";
+var cv=document.getElementById('cv'),ctx=cv.getContext('2d');ctx.imageSmoothingEnabled=false;
+var W=192,H=144;
+// ---- 像素角色（ASCII）----
+var KID=["..hhhhhh..",".hhhhhhhh.",".hssssssh.",".hsessesh.",".hssssssh.","..ssssss..",".tttttttt.","stttttttts","s.tttttt.s","..tttttt..","..pppppp..","..pp..pp..","..pp..pp..","..oo..oo.."];
+var BOT=[".....yy.....",".....gg.....","..bbbbbbbb..",".bbddddddbb.",".bbdcddcdbb.",".bbddmmddbb.",".bbddddddbb.","..bbbbbbbb..",".aabbbbbbaa.",".aabbbbbbaa.","..bbbbbbbb..","...bb..bb...","...bb..bb...","..ggg..ggg.."];
+var MON=["...r....r...","..rr....rr..",".rrrrrrrrrr.","rrrwwrrwwrrr","rrrwdrrwdrrr","rrrrrrrrrrrr","rrdddddddrrr","rrdwdwdwdrrr","rrrrrrrrrrrr",".rr.rrrr.rr.","rr..rrrr..rr"];
+var PAL={h:'#2F2F3F',s:'#F2C9A0',e:'#2F2F3F',p:'#2F4858',o:'#1B1B2F',y:'#F2C14E',g:'#7A8892',b:'#4B6FD6',d:'#1B1B2F',c:'#7FE0F2',m:'#F2C14E',a:'#3A55A8',r:'#8B3A62',w:'#FFFFFF'};
+function mk(rows,shirt){var c=document.createElement('canvas');c.width=rows[0].length;c.height=rows.length;var x=c.getContext('2d');
+  rows.forEach(function(r,j){for(var i=0;i<r.length;i++){var ch=r[i];if(ch==='.')continue;x.fillStyle=ch==='t'?shirt:PAL[ch];x.fillRect(i,j,1,1);}});return c;}
+var SPRD={"robot_ta": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAOCAYAAAA1+Nx+AAAAtklEQVR4nGNgwAI+HfT7D8LY5LCBqo5J/0EYmxwLNsGO4y5Q1iYGSgEjjOGdfw2vi7dO1IKrJUU9I7LiC2sisSo2CFmOookU9UzokilHD2Nl4wKE1GPEwRxrW4bry+TBbE1rW5wGE6seayRrRj0kaDCx6mkeyUwgwip0xf/3zy7hVPz+2SWwGhifFPUYkUxtwEjrIGJA14SsEZ2PDohRT/MgglsAKqz0JfcwgDAMwPjYCjJi1QMAGVN++L5LPWYAAAAASUVORK5CYII=", "student_boy_blue": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAAAOCAYAAAC4lZsqAAABeUlEQVR4nO2WwUrDQBCGd4Nv0QcoKNJzb+JJ8awED76CoAh67UVBKvgKIiV4F3vqtecgKr23J8VXqCQk7c50sv13s1AP+SFpNvPtn5nJJo1WhVqtzlwJms1SbY4bjvYlsjWFxxpuqbIXW+WJUf9QSdq/fCNjhBsJDPdx4dbNacepN1dX+QosdXI7Fo+5bNwkuZ4jHiiH5GB6+XJBGvhy0xWPuWxcO77TiAfKITmYXr6cr/S6u8MvinISW1XAJrhQf4b57uj807q0Xx+3nTgbazKb4kLWGyHvhYxBOVXoofskMvenO8QH4ficqrkIZ+a4931MNpNBuUi6i6bMGMr9d4WsN0JerBmDcqrQxfhMZK4GH8QH4ficqrkIF7rexXfgdNJTiLLOdw5i8qikw2TlYqgf5yQv1/yyX56j5PesdunJ357oN+X1DpYrk3zG5MFhoquK8FFqeNXxDeUj+dbxW2lgIzctHuGf9y8S4GM0pgSmrperp0/cN8c/1JxSS2im73gAAAAASUVORK5CYII=", "student_boy_green": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAAAOCAYAAAC4lZsqAAABWUlEQVR4nGNkgILuKO3/DFhA6bKrjMj8UXWo4cKEL1DQ5UbVIQAsLFhgAnamFgzYwKHTJ1D4xKizw6IG3RxS1BG0f9lVstVRCsApEAbSFtzBykYH+NSd7E/+T4wZxKojxg3IZpGrjioBOCtBBSsbHeBTZ144l5EYM4hVR4wbkM0iVx25gJFQ7KBbSqw6bGpxeWAg1FGrMgQT8fur8CbthY5tJKnDpxZZzUCpo6Z/mYgpF0BqiFXHAAVZF15iVYMeo8Sow5UK0PUSow7ZjTqzN6JgZDXEqmPCFovIAFmOWHWDHVDTv0zEFKwgNcSqY4CCaQbiDMSUMcSoQ9eDSy8x6qjtX7gifY8IrMn/4o4VGAahq71IhBpcaokxi1T3EWMutfyL0oyBSeJyFDngIpJZlJhLLXOwmUuJeRgBOApIA/Cu3JvL11Ek0PnEyjFgUUOpWaSaSY48uW4EAPP7XQjYZzTEAAAAAElFTkSuQmCC", "student_boy_red": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAAAOCAYAAAC4lZsqAAABbUlEQVR4nGNkgAJ9ffv/DFjAxYsHGZH5o+pQw4UJX6Cgy42qQwBYWLDABA7PSmTABmzT5qPwiVF3GIsadHNIUUdID5/5QbLVUQrAKRCb4/F5BJ+6TycX/CfGDGLVEeMGZLPIVUeVAESONVwpjZA6PvMERmLMIFYdMW5ANotcdeQCRkKxg24pseqwqcXlgYFQR63KEEzcjHbGm7TVl+4lSR0+tchqBkodNf3LREy5AFJDrDoGKJDMi8WqpjtKG8UcYtSh68Gllxh1yG7c9P8FCkZWQ6w6JmyxiAyQ5YhVN9gBNf3LREzBClJDrDoGKHg+aTFWNaXLrqKYQ4w6dD249BKjjtr+hbcDw96KMhADQCGv7xGBklUu7liBYRmx5qGrw2YWqe4D0ehuxG4eqplLcJiHblYpkhtRmjEwD+DyBDngIpJZlJhLLXOwmUuJeRgBOApIA/As/ObydRQJdD6xcgxY1FBqFqlmkiNPrhsBvQ9Y2hdjlMAAAAAASUVORK5CYII=", "student_girl_pink": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAAAOCAYAAAC4lZsqAAABb0lEQVR4nGNkgAJ9ffv/DFjAxYsHGZH5o+pQw4UJX6Cgy42qQwBYWLDABA7PSmTABmzT5qPwiVF3GIsadHNIUUdID5/5QbLVUQrAKRCb4/F5BJ+6TycX/CfGDGLVEeMGZLPIVUeVAESONVwpjZA6PvMERmLMIFYdMW5ANotcdeQCRkKxg24pseqwqcXlgYFQR63KEEy8qF+BN2lLNEaQpA6fWmQ1A6WOmv5lIqZcAKkhVh0DFHB5/cCqpjtKG8UcYtSh68Gllxh1yG5cfLsZBSOrIVYdE7ZYRAbIcsSqG+yAmv5lIqZgBakhVh0DFHzbxoFVTemyqyjmEKMOXQ8uvcSoo7Z/4e3AoHPrGYgBoJC38g1HySrHNq/EsIxY89DVYTOLVPeBaHQ3YjdPB0VsPRY7sPm3FCllojRjYB7A5QlywDEksygxl1rmYDOXEvMwAnAUkAbgWfjhuRsoEuh8YuUYsKih1CxSzSRHnlw3AgCJ+0/ga0uJtQAAAABJRU5ErkJggg==", "student_girl_purple": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAAAOCAYAAAC4lZsqAAABcElEQVR4nGNkgAJpaf3/DFjA06cXGZH5o+pQw4UJX6Cgy42qQwBYWLDABK6vK2TABjSD+lH4xKi7jkUNujmkqCOkh888gWx1lAJwCoQB27T5WNnoAJ+6TycX/CfGDGLVEeMGZLPIVUeVADw8KxErGx3gU8dnnsBIjBnEqiPGDchmkauOXMBIKHbQLSVWHTa1uDwwEOqoVRmCiaqoH3iTdtsyDpLU4VOLrGag1FHTv0zElAsgNcSqY4CCivwVWNV0R2mjmEOMOnQ9uPQSow7ZjYIMxigYWQ2x6piwxSIyQJYjVt1gB9T0LxMxBStIDbHqGKCgY2IEVjWly66imEOMOnQ9uPQSo47a/oW3A7e+I66NBAp5fY8IlKxycccKDMuINQ9dHTazSHUfiEZ3I3bzdNFEE4j0LyJlojRjIJIrGHF5ghxwEcksSsylljnYzKXEPIwAHAWkAXgWfnP5OooEOp9YOQYsaig1i1QzyZEn140ApJJBoP6N06IAAAAASUVORK5CYII=", "student_girl_yellow": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAAAOCAYAAAC4lZsqAAABfElEQVR4nGNkgIIoK7n/DFjAsmOPGJH5o+pQw4UJX6Cgy42qQwBYWLDABGb0NzFgAxmFdSh8YtTNwKIG3RxS1BHSs8w8gWx1lAJwCoQB27T5WNnoAJ+6TycX/CfGDGLVEeMGZLPIVUeVADw8KxErGx3gU8dnnsBIjBnEqiPGDchmkauOXMBIKHbQLSVWHTa1uDwwEOqoVRmCiU8H/fAmbT77TSSpw6cWWc1AqaOmf5mIKRdAaohVxwADHEFY1XRHaaOaQ4Q6DD049BKjDtmNM2feRcHIaohVx4QtFpEBshyx6gY7oKZ/mYgpWEFqiFXHAAM/1mFVU7rsKqo5RKjD0INDLzHqqO1feDuwY+YqHMo4UDXZb2KsivqBklXalnFgWEaseejqsJlFqvtANLobCdkLEcNuHrpZfPYIN6I0Y2AewOUJckAbklmUmEstc7CZS4l5GAE4CkgD8JCXltYHJ9OnTy8yYuMjA5gcAxTgUwOSo9QsUs0kxlxq+RcAkDRXiRStatYAAAAASUVORK5CYII=", "teacher_lady": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAAAOCAYAAAC4lZsqAAABdElEQVR4nGNkgIJsn1n/GbCAqVvSGJH5o+pQw4UJX6Cgy42qQwBYWLDABNpr2RiwgcrmXyh8YtS1Y1GDbg4p6gjpmbqFfHWUAnAKhAHbtPlY2egAn7pPJxf8J8YMYtUR4wZks8hVR5UAPDwrESsbHeBTx2eewEiMGcSqI8YNyGaRq45cwEgodtAtJVYdNrW4PDAQ6qhVGYKJvuz9eJN20VRHktThU4usZqDUUdO/TMSUCyA1xKpjgIKUuIdY1XRHaaOYQ4w6dD249BKjDtmNf9/noGBkNcSqY8IWi8gAWY5YdYMdUNO/TMQUrCA1xKpjgII5i+SxqilddhXFHGLUoevBpZcYddT2L7wduPHKAgZiACjk7e3jUbLKwYMLMSwj1jx0ddjMItV9IBrdjdjNM0EVfLqAOP8uQ6RMlGYMWPLgQkZcniAHHEQyixJzqWUONnMpMQ8jAEcBaQCehe/cuYAigc4nVo4BixpKzSLVTHLkyXUjAHhmYi+TZzrVAAAAAElFTkSuQmCC", "monster_add": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAALCAYAAABlNU3NAAAAfElEQVR4nGNgQAJW9fv/I/NxiZGinolaBuGSY0QXwAeONTqSrJ4RWfHRBgcwbd1wACsfHRCjHh5EMCAjY4CXT6p6FB/QArDAGA/nFOBUJJ8yAUOMWPUoQfTkyQWsNC5AjHqaBxETLOmBADIbmxiITap6JpgPsClG10SObwHzx1qodVUJowAAAABJRU5ErkJggg==", "monster_div": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAALCAYAAABlNU3NAAAAfElEQVR4nGNgQAJW/dn/kfm4xEhRz0Qtg3DJMaIL4APHCqeSrJ4RWfHRgilg2npCDlY+OiBGPTyIYEBGxgAvn1T1KD6gBWCBMR72HMGpSL7EBkOMWPUoQfTkyQWsNC5AjHqaBxETLOmBADIbmxiITap6JpgPsClG10SObwFp71nc3D9HuAAAAABJRU5ErkJggg==", "monster_mul": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAALCAYAAABlNU3NAAAAfElEQVR4nGNgQALdVkn/kfm4xEhRz0Qtg3DJMaIL4AOlx+aRrJ4RWXHJ0blgusc6GSsfHRCjHh5EMCAjY4CXT6p6FB/QArDAGBMensWpqEDeGEOMWPUoQfTkyQWsNC5AjHqaBxETLOmBADIbmxiITap6JpgPsClG10SObwHI5Fm1qwnpMwAAAABJRU5ErkJggg==", "candy_box": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAJCAYAAAAGuM1UAAAAMUlEQVR4nGPsjtL+z0ACYAERdg4GRCk+dOACAxMDiYBpGGhgAREg35MEQHGBLz6Q5QFhTA+x8sD1qwAAAABJRU5ErkJggg==", "candy_green": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAAGCAYAAADgzO9IAAAALElEQVR4nGNggIL4/VX/QRjGZ4IJIisA0YzIgsgArAOrxELHNkZ0QRQxdMsBtTUU+7DHTikAAAAASUVORK5CYII=", "candy_red": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAAGCAYAAADgzO9IAAAALUlEQVR4nGNggIKb0c7/QRjGZ4IJIisA0YzIgsgArAOrhPrSvYzogihi6JYDAHHEFFbv6Y+lAAAAAElFTkSuQmCC", "candy_yellow": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAYAAAAGCAYAAADgzO9IAAAALUlEQVR4nGNggIJPB/3+gzCMzwQTRFYAohmRBZEBWAdWCT77TYzogihi6JYDAJqVFwgqqvtDAAAAAElFTkSuQmCC", "chest": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAJCAYAAAAGuM1UAAAAXUlEQVR4nGNkYGBgiLKS+89ABFh27BEjC0ixn4UMA5HgPxMuGS9/ETBGBiCDWUCMTSeeMKADmOJNaHJgDfichCwH0gzWgA1s2/gGqzhOP+ACOP2AF4CCFl9cIMsDAI2hHeiLJK1AAAAAAElFTkSuQmCC", "heart": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAICAYAAAArzdW1AAAAQUlEQVR4nGNgYGBguBnt/B+EGZAAshgjuqT60r0YYkzIHJgJ6GIYirABJpDx+BSA5MEm4VIIE4dbh64Qrw3YHA4AXJkeghUyOVEAAAAASUVORK5CYII=", "house": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAANCAYAAACZ3F9/AAAAeUlEQVR4nGNgwAFuRjv/B2Fc8ky4NDFgYePViE3hTSxiKBrxOe0mmhwTMZqwqWEiVhMMwNQykqIJGTCCiBcPzxOtWULekBEjcKZfEQdjdDAdizjWeASBSXnRYIwLsCBzMnVeYlWETRynjYQA2KPdUdpEB07psqtgPQA2CDPQHk2lgAAAAABJRU5ErkJggg==", "rock": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAFCAYAAAB4ka1VAAAAO0lEQVR4nGNkgIKuSbP+w9ggUJaXxgiimbBJIosxwRgPHz1CVwMGYBNAQF5ODi4IUwzSDLYHmxUwdwAA6+cYgsjFl3gAAAAASUVORK5CYII=", "sign_board": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAMCAYAAABbayygAAAAUUlEQVR4nGPsjtL+z0AEYAERegYKeBVduvAAohAErBNbsSo6Or8aYSIMuNl7oSjadXAbqtXYJLC6kTYmHoU6Gq9CkPdJBqAIwBYJTMQaQLRCAOZ2GxbyjhR+AAAAAElFTkSuQmCC", "star": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAYAAADgkQYQAAAAP0lEQVR4nGNgQAOfDvr9RxdjYiACMGEzBd00RmzGY5jEZ7+JEZ8CkDzYOlwKYeIYDsdpMshd6G7DEMPleJg4AKY2Iwx7Qo8gAAAAAElFTkSuQmCC", "tree": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAALCAYAAABLcGxfAAAAY0lEQVR4nGNkQAJW/dn/GbCAY4VTGWFsJkKK0eWY0AW+vn7PgA1YQdUw4jMZG2AiZPJXNHG4Bm5RQawauNHEmZBDgBAAqQXbgK4Jm/NgajBM747SRgmE0mVXUdTA/UAsIFkDAAZ1JeVxt9YVAAAAAElFTkSuQmCC"};var SPR={};Object.keys(SPRD).forEach(function(k){var im=new Image();im.src=SPRD[k];SPR[k]=im;});
+var DIRF={down:0,left:2,right:4,up:6};
+function drawPerson(name,dir,moving,t,x,y){var im=SPR[name];if(!im||!im.complete)return;var fi=(DIRF[dir]||0)+(moving?(Math.floor(t/140)%2):0);ctx.drawImage(im,fi*10,0,10,14,Math.round(x),Math.round(y),10,14);}
+function drawSheet2(name,fw,fh,t,x,y){var im=SPR[name];if(!im||!im.complete)return;ctx.drawImage(im,(Math.floor(t/420)%2)*fw,0,fw,fh,Math.round(x),Math.round(y),fw,fh);}
+function drawObj(name,x,y){var im=SPR[name];if(!im||!im.complete)return;ctx.drawImage(im,Math.round(x),Math.round(y));}
+var bg=new Image();bg.src=BG;
+// ---- 狀態與存檔 ----
+var S={xp:0,done:[],monster:false,mei:false,zhe:false,chest:false,madd:false,mdiv:false};
+try{var raw=localStorage.getItem('pxclass1025');if(raw){var o=JSON.parse(raw);for(var k in o)S[k]=o[k];}}catch(e){}
+function save(){try{localStorage.setItem('pxclass1025',JSON.stringify(S));}catch(e){}}
+function hud(){var lv=1+Math.floor(S.xp/50),cur=S.xp%50;document.getElementById('lv').textContent='Lv.'+lv;
+  document.getElementById('xpbar').style.width=(cur/50*100)+'%';document.getElementById('xp').textContent=cur+' / 50';
+  document.getElementById('qn').textContent=(function(n){return '任務 '+Math.min(S.done.length,n)+'/'+n;})(Q?Q.length:3);}
+hud();
+// ---- 島嶼場景（預先畫好）----
+var isl=document.createElement('canvas');isl.width=W;isl.height=H;
+var ISL=[[8,70,60,62],[8,8,56,46],[108,74,76,56],[108,8,76,48]];            // 四座島
+var BRG=[[30,54,12,16],[68,98,40,12],[140,56,12,18],[64,24,44,12]];         // 四座橋（最後兩座要打敗怪獸才通）
+function drawIsland(){var x=isl.getContext('2d');x.fillStyle='#2E6FB5';x.fillRect(0,0,W,H);
+  x.fillStyle='#4B8FD6';[10,40,74,104,132].forEach(function(y){x.fillRect(0,y,W,2);});
+  BRG.forEach(function(b){x.fillStyle='#8B5A2B';x.fillRect(b[0],b[1],b[2],b[3]);x.fillStyle='#A8723A';
+    if(b[2]>b[3])for(var i=b[0]+2;i<b[0]+b[2];i+=4)x.fillRect(i,b[1],2,b[3]);else for(var j=b[1]+2;j<b[1]+b[3];j+=4)x.fillRect(b[0],j,b[2],2);});
+  ISL.forEach(function(r){x.fillStyle='#E6D39A';x.fillRect(r[0],r[1],r[2],r[3]);x.fillStyle='#5FBF7A';x.fillRect(r[0]+4,r[1]+4,r[2]-8,r[3]-8);});
+      x.fillStyle='#4B4B63';x.fillRect(14,14,44,32);x.fillStyle='#6B6B88';x.fillRect(18,18,36,24);                                         // 怪獸島岩地
+  }
+drawIsland();if(document.fonts&&document.fonts.ready)document.fonts.ready.then(drawIsland);
+// ---- 場景 ----
+var DESKS=[[1,4],[5,4],[9,4],[1,6],[5,6],[9,6]];
+var robot={x:80,y:38,w:12,h:14};
+var CLS_BLOCK=[[0,0,192,30],[0,16,16,16],[0,128,16,16],[160,0,32,32],[robot.x+2,robot.y+10,robot.w-4,5]];
+DESKS.forEach(function(p){CLS_BLOCK.push([p[0]*16,p[1]*16+3,32,12]);});
+CLS_BLOCK.push([34,50,10,5],[150,50,10,5],[44,104,10,5],[140,104,10,5]);   // 老師、告示牌、兩位同學
+function inR(px,py,r){return px>=r[0]&&px<r[0]+r[2]&&py>=r[1]&&py<r[1]+r[3];}
+function blockHit(list,fx,fy,fw,fh){for(var i=0;i<list.length;i++){var b=list[i];if(fx<b[0]+b[2]&&fx+fw>b[0]&&fy<b[1]+b[3]&&fy+fh>b[1])return true;}return false;}
+function walkable(px,py){var i;for(i=0;i<ISL.length;i++)if(inR(px,py,ISL[i]))return true;
+  for(i=0;i<BRG.length;i++){if(i>=2&&!S.monster)continue;if(inR(px,py,BRG[i]))return true;}return false;}
+var scene='classroom',player={x:90,y:112,w:10,h:14,dir:1,f4:'down',step:0};
+function hit(nx,ny){var fx=nx+1,fy=ny+9,fw=8,fh=5;if(fx<0||fy<0||fx+fw>W||fy+fh>H)return true;
+  if(scene==='classroom')return blockHit(CLS_BLOCK,fx,fy,fw,fh);
+  var dyn=[];if(S.monster&&!S.madd)dyn.push([162,30,12,5]);if(S.monster&&!S.mdiv)dyn.push([150,114,12,5]);
+  return !(walkable(fx,fy)&&walkable(fx+fw-1,fy)&&walkable(fx,fy+fh-1)&&walkable(fx+fw-1,fy+fh-1))||blockHit([[116,24,16,10],[28,22,8,8],[20,80,14,6],[48,108,10,5],[14,116,10,5],[44,80,12,6],[120,38,10,5],[168,92,10,5],[118,112,10,5],[150,44,10,5]].concat(dyn),fx,fy,fw,fh);}
+function go(to){scene=to;if(to==='island'){player.x=22;player.y=96;}else{player.x=88;player.y=112;}}
+// ---- 對話 ----
+var mode='walk',who=document.getElementById('who'),txt=document.getElementById('txt'),ch=document.getElementById('ch'),timer=null;
+function say(w,t,choices){who.textContent=w;ch.innerHTML='';clearInterval(timer);var i=0;txt.textContent='';
+  timer=setInterval(function(){i++;txt.textContent=t.slice(0,i);if(i>=t.length){clearInterval(timer);if(choices)choices.forEach(function(o){var b=document.createElement('button');b.textContent=o.t;b.onclick=o.f;ch.appendChild(b);});}},22);}
+function end(){mode='walk';closeAsk();who.textContent='提示';txt.textContent=scene==='classroom'?'用方向鍵走動，靠近東西按 E。從下方的門可以出發去島嶼。':'用方向鍵走動。乘法怪獸擋在橋前，打敗牠才能去別人的島。';ch.innerHTML='';}
+var Q=[
+ {q:'有 6 顆糖果，要平均放進 3 個盒子。每盒放幾顆？',c:['2 顆','3 顆','6 顆'],a:0,hint:'先試試看：如果每盒放 3 顆，3 個盒子要幾顆糖果？夠不夠 6 顆？'},
+ {q:'3 盒糖果，每盒 4 顆，一共幾顆？',c:['7 顆','12 顆','34 顆'],a:1,hint:'三盒疊起來，你可以怎麼算？先說說你的想法。'},
+ {q:'阿哲說「6 × 3 和 3 × 6 的結果不一樣」，你同意嗎？',c:['同意','不同意，結果一樣'],a:1,hint:'畫畫看：6 排、每排 3 個，再把圖轉個方向看看。'}];
+var QMUL=Q.slice();
+function ask(){var next=-1;for(var i=0;i<Q.length;i++)if(S.done.indexOf(i)<0){next=i;break;}
+  if(next<0){mode='dlg';say('小數助教','今天的任務都完成了！可以從下方的門出發去島嶼，找乘法怪獸挑戰。',[{t:'再見',f:end}]);return;}
+  mode='dlg';show(next);}
+function show(n){var q=Q[n];say('小數助教','任務 '+(n+1)+'：'+q.q,q.c.map(function(t,k){return{t:t,f:function(){answer(n,k);}};}));}
+function answer(n,k){var q=Q[n];
+  if(k===q.a){S.done.push(n);S.xp+=25;save();hud();say('小數助教','答對了！+25 經驗。你是怎麼想到的？下次可以說給同學聽。',[{t:'下一題',f:ask},{t:'先到這裡',f:end}]);}
+  else say('小數助教','先別急。'+q.hint,[{t:'再試一次',f:function(){show(n);}},{t:'先離開',f:end}]);}
+function battle(i){mode='dlg';
+  if(i>=QMUL.length){S.monster=true;S.xp+=50;save();hud();say('乘法怪獸','嗚……我輸了！橋放下來了，你可以去小美和阿哲的島了。（+50 經驗）',[{t:'出發',f:end}]);return;}
+  var q=QMUL[i];say('乘法怪獸','第 '+(i+1)+' 關（要連續答對 '+QMUL.length+' 題）：'+q.q,q.c.map(function(t,k){return{t:t,f:function(){
+    if(k===q.a)battle(i+1);else say('乘法怪獸','哼哼，答錯了！提示：'+q.hint,[{t:'重新挑戰',f:function(){battle(0);}},{t:'先離開',f:end}]);}};}));}
+var QADD=[
+ {q:'小安有 8 顆糖，小文又給他 5 顆。一共有幾顆？',c:['12 顆','13 顆','14 顆'],a:1,hint:'先把 8 湊成 10：要從 5 裡拿幾顆來湊？剩下的再加上去。'},
+ {q:'27 + 15 = ？',c:['42','32','52'],a:0,hint:'先看個位：7 + 5 是多少？要不要進位到十位？'},
+ {q:'阿哲說「3 + 4 和 4 + 3 的答案不一樣」，你同意嗎？',c:['同意','不同意，答案一樣'],a:1,hint:'拿 3 顆糖和 4 顆糖放在一起數，再換個順序數數看。'}];
+var QDIV=[
+ {q:'12 顆糖平均分給 4 個人，每人幾顆？',c:['2 顆','3 顆','4 顆'],a:1,hint:'每人先分 1 顆，用掉幾顆？剩下的再繼續分。'},
+ {q:'15 ÷ 3 = ？',c:['4','5','6'],a:1,hint:'想想看：3 乘以多少會等於 15？'},
+ {q:'17 顆糖分給 5 個人，每人 3 顆，會剩下幾顆？',c:['1 顆','2 顆','3 顆'],a:1,hint:'先算 5 人 × 3 顆等於幾顆，再跟 17 比一比。'}];
+function fight(key,name,bank,win,i){mode='dlg';
+  if(i>=bank.length){S[key]=true;S.xp+=50;save();hud();say(name,win,[{t:'繼續',f:end}]);return;}
+  var q=bank[i];say(name,'第 '+(i+1)+' 關（要連續答對 '+bank.length+' 題）：'+q.q,q.c.map(function(t,k){return{t:t,f:function(){
+    if(k===q.a)fight(key,name,bank,win,i+1);else say(name,'哼哼，答錯了！提示：'+q.hint,[{t:'重新挑戰',f:function(){fight(key,name,bank,win,0);}},{t:'先離開',f:end}]);}};}));}
+function helpNpc(key,name,text,xpMsg){mode='dlg';
+  if(S[key]){say(name,'謝謝你上次幫忙！我現在懂了。',[{t:'不客氣',f:end}]);return;}
+  say(name,text,[{t:'我來幫你',f:function(){S[key]=true;S.xp+=25;save();hud();say(name,xpMsg+'（+25 經驗）',[{t:'不客氣',f:end}]);}},{t:'等一下',f:end}]);}
+
+// ---- 流量監控與上限（示意；真實版要放在伺服器端）----
+var CAPS={perMin:6,perDay:60,classDay:3000,monthNT:1500,pause:false},U={day:'',n:0,cls:0,nt:0,bytes:0,mon:'',monNT:0,min:[]};
+try{var c0=localStorage.getItem('pxclass_caps');if(c0){var cj=JSON.parse(c0);for(var kk in cj)CAPS[kk]=cj[kk];}var u0=localStorage.getItem('pxclass_use');if(u0)U=JSON.parse(u0);}catch(e){}
+function today(){var d=new Date();return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
+function roll(){var t=today();if(U.day!==t){U.day=t;U.n=0;U.cls=0;U.nt=0;U.bytes=0;U.min=[];}if(U.mon!==t.slice(0,7)){U.mon=t.slice(0,7);U.monNT=0;}}
+function saveU(){try{localStorage.setItem('pxclass_use',JSON.stringify(U));localStorage.setItem('pxclass_caps',JSON.stringify(CAPS));}catch(e){}}
+function checkCap(){roll();var now=Date.now();U.min=U.min.filter(function(t){return now-t<60000;});
+  if(CAPS.pause)return {ok:false,why:'老師暫時關閉了 AI 對話。'};
+  if(U.min.length>=CAPS.perMin)return {ok:false,why:'你問得太快了，請等一分鐘再問。',soft:true};
+  if(U.n>=CAPS.perDay)return {ok:false,why:'你今天的 AI 對話次數用完了。'};
+  if(U.cls>=CAPS.classDay)return {ok:false,why:'全班今天的 AI 對話額度用完了。'};
+  if(U.monNT>=CAPS.monthNT)return {ok:false,why:'本月的 AI 預算用完了。'};
+  return {ok:true};}
+function record(chars){roll();U.n++;U.cls++;U.min.push(Date.now());var nt=0.02+chars*0.0002;U.nt+=nt;U.monNT+=nt;U.bytes+=chars*3+400;saveU();renderAdm();}
+function stubReply(q){if(/乘|×|x|X/.test(q))return '想想看：乘法可以看成「幾個一樣多的東西」加在一起。你可以先畫出來嗎？';
+  if(/糖|盒|分/.test(q))return '先說說看：總共有幾個？要分成幾份？每一份應該一樣多嗎？';
+  if(/不會|不懂|難/.test(q))return '沒關係。我們先拆成小步驟：你已經知道哪一部分了？';
+  return '你說「'+q.slice(0,20)+'」。你覺得第一步可以先做什麼？用自己的話說說看，我們再一起檢查。';}
+var CFG=window.PX_CONFIG||{};
+function endpoint(){var ep='';try{ep=localStorage.getItem('pxclass_endpoint')||'';}catch(e){}if(!ep)ep=CFG.backend||'';return ep.replace(/\/+$/,'');}
+function aiReply(q){return new Promise(function(res){var ep=endpoint();
+  if(!ep){setTimeout(function(){res({reply:stubReply(q),local:true});},450);return;}
+  fetch(ep+'/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({student:'demo',text:q})})
+    .then(function(r){return r.json().then(function(d){return {status:r.status,d:d};});})
+    .then(function(o){if(o.status===200)res({reply:o.d.reply,tokens:o.d.tokens});else res({blocked:o.d.blocked||'error',error:o.d.error||'AI 暫時沒有回應'});})
+    .catch(function(){res({blocked:'offline',error:'連不到後端，改用離線題庫。'});});});}
+var askf=document.getElementById('askf'),askin=document.getElementById('askin');
+function openAsk(){mode='dlg';say('小數助教','你想問什麼？（示意回覆，不是真的 AI）');ch.innerHTML='';askf.hidden=false;askin.value='';askin.focus();}
+function closeAsk(){askf.hidden=true;}
+askf.addEventListener('submit',function(e){e.preventDefault();var q=askin.value.trim();if(!q)return;closeAsk();var useBack=!!endpoint();var cp=useBack?{ok:true}:checkCap();
+  if(!cp.ok){say('小數助教',cp.why+(cp.soft?'':'我改出準備好的題目給你。'),cp.soft?[{t:'好',f:end}]:[{t:'做任務',f:ask},{t:'再見',f:end}]);renderAdm();return;}
+  say('小數助教','（思考中…）');aiReply(q).then(function(r){
+    if(r.blocked){say('小數助教',r.error+(r.blocked==='rate'?'':'我改出準備好的題目給你。'),r.blocked==='rate'?[{t:'好',f:end}]:[{t:'做任務',f:ask},{t:'再見',f:end}]);renderAdm();return;}
+    if(r.local)record(q.length+r.reply.length);else renderAdm();
+    say('小數助教',r.reply,[{t:'再問一個',f:openAsk},{t:'做任務',f:ask},{t:'再見',f:end}]);});});
+function pct(a,b){return Math.min(100,Math.round(a/b*100));}
+var WL=['scatjay@gmail.com','nthuchwu@gapp.nthu.edu.tw'],admEmail='',admMsg='';
+try{admEmail=sessionStorage.getItem('pxclass_adm')||'';}catch(e){}
+function admOk(){return WL.indexOf(admEmail.trim().toLowerCase())>=0;}
+var admToken='';
+function b64json(s){try{return JSON.parse(decodeURIComponent(escape(atob(s.replace(/-/g,'+').replace(/_/g,'/')))));}catch(e){return {};}}
+function renderGoogleGate(el){el.innerHTML='<div class="note" style="margin-top:8px">老師後台只開放白名單的 Google 帳號。請用學校或個人 Google 帳號登入：</div><div id="gsi" style="margin:8px 0"></div><div class="note warn" id="admmsg">'+admMsg+'</div>';
+  function init(){if(!window.google||!google.accounts||!google.accounts.id){admMsg='Google 登入載入失敗，請重新整理。';document.getElementById('admmsg').textContent=admMsg;return;}
+    google.accounts.id.initialize({client_id:CFG.googleClientId,callback:function(r){var em=(b64json((r.credential||'').split('.')[1]||'').email||'').toLowerCase();
+      if(WL.indexOf(em)>=0){admToken=r.credential;admEmail=em;admMsg='';}else{admMsg='這個帳號不在白名單，無法進入後台。';}renderAdm();}});
+    google.accounts.id.renderButton(document.getElementById('gsi'),{theme:'filled_black',size:'large',text:'signin_with'});}
+  if(window.google&&window.google.accounts)init();else{var sc=document.createElement('script');sc.src='https://accounts.google.com/gsi/client';sc.async=true;sc.onload=init;sc.onerror=init;document.head.appendChild(sc);}}
+function renderGate(el){if(CFG.googleClientId){renderGoogleGate(el);return;}
+  el.innerHTML='<div class="note" style="margin-top:8px">老師後台只開放白名單帳號：</div><ul class="note" style="margin:4px 0 8px;padding-left:18px">'+WL.map(function(w){return '<li>'+w+'</li>';}).join('')+'</ul>'
+  +'<form id="admf" class="askf"><input id="admin" type="email" placeholder="輸入 Google 帳號" autocomplete="off"><button type="submit">登入</button></form><div class="note warn" id="admmsg" style="margin-top:6px">'+admMsg+'</div>'
+  +'<div class="note" style="margin-top:6px">示意：靜態網頁無法真的驗證 Google 身分，這裡只是展示流程。正式版改用 Google 登入，白名單由伺服器規則檢查，不放在前端。</div>';
+  document.getElementById('admf').onsubmit=function(e){e.preventDefault();var v=document.getElementById('admin').value.trim().toLowerCase();
+    if(WL.indexOf(v)>=0){admEmail=v;admMsg='';try{sessionStorage.setItem('pxclass_adm',v);}catch(x){}}else{admMsg='這個帳號不在白名單，無法進入後台。';}renderAdm();};}
+function renderAdm(){var el=document.getElementById('admbody');if(!el||!document.getElementById('adm').open)return;roll();if(!admOk()){renderGate(el);return;}
+  var p1=pct(U.cls,CAPS.classDay),p2=pct(U.monNT,CAPS.monthNT),p3=pct(U.bytes/1048576,360),st=CAPS.pause?['已暫停','stop']:(p1>=100||p2>=100)?['已到上限','stop']:(p1>=80||p2>=80)?['接近上限','warn']:['正常',''];
+  el.innerHTML='<div class="ag"><div class="c">今天 AI 對話<b>'+U.cls+'</b>全班上限 '+CAPS.classDay+'（'+p1+'%）</div><div class="c">你今天的次數<b>'+U.n+'</b>每人上限 '+CAPS.perDay+'／每分鐘 '+CAPS.perMin+'</div><div class="c">今天估計費用<b>NT$ '+U.nt.toFixed(2)+'</b>本月 NT$ '+U.monNT.toFixed(2)+'／'+CAPS.monthNT+'（'+p2+'%）</div><div class="c">資料傳輸<b>'+(U.bytes/1024).toFixed(1)+' KB</b>每天免費額度 360 MB（'+p3+'%）</div><div class="c">狀態<b class="'+st[1]+'">'+st[0]+'</b>80% 通知老師，100% 改離線題庫</div></div>'
+  +'<div class="ag"><div class="c">每人每天<input type="number" min="1" data-k="perDay" value="'+CAPS.perDay+'"></div><div class="c">每人每分鐘<input type="number" min="1" data-k="perMin" value="'+CAPS.perMin+'"></div><div class="c">全班每天<input type="number" min="1" data-k="classDay" value="'+CAPS.classDay+'"></div><div class="c">每月費用上限（NT$）<input type="number" min="1" data-k="monthNT" value="'+CAPS.monthNT+'"></div></div>'
+  +'<div class="ag" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr))"><button id="bpause" class="main">'+(CAPS.pause?'恢復 AI 對話':'緊急暫停 AI')+'</button><button id="bsim">模擬全班 +500 次</button><button id="breset">重設今日用量</button></div>'
+  +'<div class="c" style="margin-top:8px;background:var(--edge);border:2px solid var(--btn);padding:8px;font-size:13px"><b>連線後端（真實 Gemini）</b><div class="askf" style="margin-top:6px"><input id="epin" placeholder="例：http://127.0.0.1:18791（空白＝示意回覆）" value="'+endpoint()+'"><button id="epsave">儲存</button></div><div class="askf" style="margin-top:6px"><input id="newkey" type="password" autocomplete="off" placeholder="貼上新的 Gemini 金鑰（只送到後端，不顯示、不保存在這裡）"><button id="keysave">更換金鑰</button></div><div class="askf" style="margin-top:6px"><button id="deidbtn">去識別化：讀取中…</button><input id="names" placeholder="要遮蔽的姓名（用逗號分隔，例：王小明,陳美麗）"><button id="namesave">存姓名</button></div><div class="note" style="margin-top:6px">去識別化開啟時：學生代號轉成不可逆的代稱、不保存對照表；送給 AI 與寫入紀錄前，會遮蔽電話、email、網址、長串數字與上面列的姓名。關閉時照原樣記錄。切換不會改寫已存的舊資料。</div><div class="note" id="epmsg" style="margin-top:6px"></div></div>'
+  +'<details class="c" id="qdet" style="margin-top:8px;background:var(--edge);border:2px solid var(--btn);padding:8px;font-size:13px"><summary><b>題庫編輯（助教任務與三種怪獸的題目）</b></summary><div class="note" style="margin:6px 0">需先連線後端。儲存後學生重新整理頁面就會看到新題目；最近 10 版會保留。</div><div id="qed"></div><div class="note" id="qmsg" style="margin-top:6px"></div></details>'
+  +'<div class="ag" style="grid-template-columns:1fr"><button id="badmout">登出（'+admEmail+'）</button></div>'
+  +'<div class="note" style="margin-top:8px">示意：用量存在這台瀏覽器；真實版要放伺服器端，金鑰只存後台，並在 Google 後台另設預算警示。單價是示意值。</div>';
+  Array.prototype.forEach.call(el.querySelectorAll('input[data-k]'),function(i){i.onchange=function(){var v=Math.max(1,parseInt(i.value,10)||1);CAPS[i.dataset.k]=v;saveU();renderAdm();};});
+  var epm=document.getElementById('epmsg');
+  function srv(path,body,cb){var ep=endpoint();if(!ep){epm.textContent='還沒設定後端網址。';return;}var hd={'Content-Type':'application/json'};if(admToken)hd.Authorization='Bearer '+admToken;fetch(ep+path+(!body&&path.indexOf('/admin')===0&&!admToken?'?email='+encodeURIComponent(admEmail):''),{method:body?'POST':'GET',headers:hd,body:body?JSON.stringify(Object.assign(admToken?{}:{email:admEmail},body)):undefined}).then(function(r){return r.json().then(function(d){cb(r.status,d);});}).catch(function(){epm.textContent='連不到後端。';});}
+  document.getElementById('epsave').onclick=function(){var v=document.getElementById('epin').value.trim();try{if(v)localStorage.setItem('pxclass_endpoint',v);else localStorage.removeItem('pxclass_endpoint');}catch(x){}
+    if(!v){epm.textContent='已改回示意回覆。';return;}srv('/health',null,function(c,d){epm.textContent=c===200?('後端連線成功；金鑰'+(d.hasKey?'已設定':'尚未設定')+'；模型 '+d.model):'連線失敗。';if(c===200)loadDeid();});};
+  var deidState=null;
+  function loadDeid(){srv('/admin/usage',null,function(c,d){var b=document.getElementById('deidbtn');if(!b)return;if(c===200){deidState=!!d.deid;b.textContent='去識別化：'+(deidState?'開（點一下關閉）':'關（點一下開啟）');}else b.textContent='去識別化：無法讀取';});}
+  if(endpoint())loadDeid();else document.getElementById('deidbtn').textContent='去識別化：先設定後端';
+  document.getElementById('deidbtn').onclick=function(){if(deidState===null)return;srv('/admin/caps',{deid:!deidState},function(c,d){if(c===200){epm.textContent='已'+(d.caps.deid?'開啟':'關閉')+'去識別化。';loadDeid();}else epm.textContent=d.error||'切換失敗';});};
+  document.getElementById('namesave').onclick=function(){var arr=document.getElementById('names').value.split(/[,，、\s]+/).filter(Boolean);srv('/admin/caps',{nameList:arr},function(c,d){epm.textContent=c===200?('已儲存 '+d.caps.nameList.length+' 個要遮蔽的姓名。'):(d.error||'儲存失敗');document.getElementById('names').value='';});};
+  document.getElementById('keysave').onclick=function(){var k=document.getElementById('newkey').value.trim();if(!k){epm.textContent='請先貼上金鑰。';return;}
+    srv('/admin/key',{key:k},function(c,d){document.getElementById('newkey').value='';epm.textContent=c===200?('金鑰已更換並驗證可用（末四碼 '+d.last4+'）。'):(d.error||'更換失敗');});};
+  document.getElementById('qdet').addEventListener('toggle',function(){if(this.open&&!document.querySelector('#qed .qi')&&!document.getElementById('qsel')){if(!endpoint()){document.getElementById('qmsg').textContent='還沒設定後端網址，請先在上方連線後端。';return;}qEditor(srv,document.getElementById('qmsg'));}});
+  document.getElementById('badmout').onclick=function(){admEmail='';admToken='';admMsg='';try{sessionStorage.removeItem('pxclass_adm');}catch(x){}renderAdm();};
+  document.getElementById('bpause').onclick=function(){CAPS.pause=!CAPS.pause;saveU();renderAdm();};
+  document.getElementById('bsim').onclick=function(){roll();U.cls+=500;U.nt+=500*0.05;U.monNT+=500*0.05;saveU();renderAdm();};
+  document.getElementById('breset').onclick=function(){U.n=0;U.cls=0;U.nt=0;U.bytes=0;U.min=[];saveU();renderAdm();};}
+document.getElementById('adm').addEventListener('toggle',renderAdm);
+
+// ---- 底部六個分頁：地圖、排行、小組、任務板、離島、背包 ----
+(function(){
+var st=document.createElement('style');
+st.textContent='.tabs{width:100%;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px}.tabs button{padding:6px 2px 4px;min-height:48px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:12px;box-shadow:2px 2px 0 var(--edge)}.tabs button.on{background:var(--gold);color:#1B1B2F}.tabs canvas{width:20px;height:20px;image-rendering:pixelated}'
+ +'.panel{width:100%;background:var(--edge);border:3px solid var(--btn);padding:10px 12px;font-size:14px;display:flex;flex-direction:column;gap:8px}.panel h3{margin:0;font-size:16px;color:var(--gold)}.row{display:flex;align-items:center;gap:8px}.row .bar{flex:1;height:10px;background:var(--panel);border:2px solid var(--btn)}.row .bar i{display:block;height:100%;background:var(--gold)}.panel .me{color:var(--gold);font-weight:700}.panel .dim{color:var(--dim);font-size:12px}.bag{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}.bag .it{background:var(--panel);border:2px solid var(--btn);padding:8px;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center}.bag .it.off{opacity:.45}.bag canvas{width:40px;height:40px;image-rendering:pixelated}';
+document.head.appendChild(st);
+var ICON={
+ map:["....ii....","...iiii...","..ii..ii..",".ii.ii.ii.","ii.iiii.ii","ii.iiii.ii",".ii.ii.ii.","..ii..ii..","...iiii...","....ii...."],
+ rank:["....iiii..","....iiii..","....iiii..","iii.iiii..","iii.iiiiiii","iii.iiiiiii","iiiiiiiiii","iiiiiiiiii"].map(function(r){return (r+'..........').slice(0,10);}),
+ group:[".ii.ii.ii.",".ii.ii.ii.","iiiiiiiiii","iiiiiiiiii","iiiiiiiiii","..........","..........","..........","..........",".........."],
+ quest:[".iiiiiiii.",".i......i.",".i.iiii.i.",".i......i.",".i.iiii.i.",".i......i.",".i.iii..i.",".i......i.",".iiiiiiii.",".........."],
+ island:["...iiii...","..iiiiii..",".ii.ii.ii.","....ii....","....ii....","....ii....","iiiiiiiiii",".iiiiiiii.","..........",".........."],
+ bag:["...iiii...","..i....i..",".iiiiiiii.","iiiiiiiiii","ii.iiii.ii","ii.iiii.ii","iiiiiiiiii","iiiiiiiiii",".iiiiiiii.",".........."]};
+// 小組圖示重畫：三個人（頭＋肩）
+ICON.group=[".ii.ii.ii.",".ii.ii.ii.","iiiiiiiiii","iiiiiiiiii","iiiiiiiiii","i.iiiiii.i","i..iiii..i","..........","..........",".........."];
+function icoCanvas(rows,color,sc){var c=document.createElement('canvas');c.width=10;c.height=10;var x=c.getContext('2d');x.fillStyle=color;rows.forEach(function(r,y){for(var i=0;i<r.length&&i<10;i++)if(r[i]==='i')x.fillRect(i,y,1,1);});return c;}
+function badge(kind,on){var c=document.createElement('canvas');c.width=10;c.height=10;var x=c.getContext('2d');
+  var disc=["...oooo...","..oooooo..",".oooooooo.","oooooooooo","oooooooooo","oooooooooo","oooooooooo",".oooooooo.","..oooooo..","...oooo..."];
+  x.fillStyle=on?'#F2C14E':'#4B5A63';disc.forEach(function(r,y){for(var i=0;i<10;i++)if(r[i]==='o')x.fillRect(i,y,1,1);});
+  if(!on){x.fillStyle='#1B1B2F';[[4,3],[5,3],[3,4],[6,4],[3,5],[6,5],[3,6],[4,6],[5,6],[6,6]].forEach(function(p){x.fillRect(p[0],p[1],1,1);});x.fillRect(4,4,2,0);return c;}
+  x.fillStyle='#1B1B2F';
+  var G={analyze:[[2,6],[2,7],[2,8],[4,4],[4,5],[4,6],[4,7],[4,8],[6,2],[6,3],[6,4],[6,5],[6,6],[6,7],[6,8],[7,2],[7,3]],
+         evaluate:[[2,5],[3,6],[4,7],[5,6],[6,5],[7,4],[8,3]],
+         create:[[5,1],[5,2],[5,3],[5,4],[5,5],[5,6],[5,7],[5,8],[1,5],[2,5],[3,5],[4,5],[6,5],[7,5],[8,5]]}[kind];
+  G.forEach(function(p){x.fillRect(p[0],p[1],1,1);});return c;}
+var TABS=[['map','地圖'],['rank','排行'],['group','小組'],['quest','任務板'],['island','離島'],['bag','背包']];
+var tabs=document.createElement('div');tabs.className='tabs';var panel=document.createElement('div');panel.className='panel';panel.hidden=true;
+var dlgEl=document.getElementById('dlg');dlgEl.parentNode.insertBefore(tabs,dlgEl);dlgEl.parentNode.insertBefore(panel,dlgEl);
+var cur='map';
+TABS.forEach(function(t){var b=document.createElement('button');b.dataset.t=t[0];b.appendChild(icoCanvas(ICON[t[0]],'#fff',1));var s=document.createElement('span');s.textContent=t[1];b.appendChild(s);b.onclick=function(){openTab(t[0]);};tabs.appendChild(b);});
+function pctOf(a,b){return Math.max(2,Math.min(100,Math.round(a/b*100)));}
+function render(t){
+  if(t==='rank'){var L=[{n:'小美',xp:140},{n:'阿哲',xp:120},{n:'你',xp:S.xp,me:1},{n:'小安',xp:60},{n:'小文',xp:35}].sort(function(a,b){return b.xp-a.xp;});
+    return '<h3>班級排行</h3>'+L.map(function(p,i){return '<div class="row'+(p.me?' me':'')+'"><span style="width:24px">'+(i+1)+'.</span><span style="width:44px">'+p.n+'</span><div class="bar"><i style="width:'+pctOf(p.xp,160)+'%"></i></div><span style="width:44px;text-align:right">'+p.xp+'</span></div>';}).join('')+'<div class="dim">示意資料（只有「你」是真的）。排行只比經驗，不顯示對錯次數。</div>';}
+  if(t==='group'){return '<h3>我的小組（4 人）</h3>'
+    +'<div class="row"><span style="width:48px">小美</span><span>'+(S.mei?'已解決「分糖果」，謝謝你！':'卡在「分糖果」，等你幫忙')+'</span></div>'
+    +'<div class="row"><span style="width:48px">阿哲</span><span>'+(S.zhe?'學會用加的算九九乘法了':'卡在九九乘法第 7 題')+'</span></div>'
+    +'<div class="row"><span style="width:48px">小安</span><span>正在做任務 2</span></div>'
+    +'<div class="row me"><span style="width:48px">你</span><span>經驗 '+S.xp+'，完成 '+S.done.length+' 題</span></div>'
+    +'<div class="dim">小組任務：一起算出「6 顆糖分給 3 個盒子」的幾種分法，並說說你們怎麼想的。示意畫面。</div>';}
+  if(t==='quest'){var d=S.done.length;return '<h3>任務板</h3>'
+    +'<div class="row"><span>'+(d>=Q.length?'☑':'☐')+'</span><span>跟助教完成 '+Q.length+' 題（'+Math.min(d,Q.length)+'/'+Q.length+'）</span></div>'
+    +'<div class="row"><span>'+(S.monster?'☑':'☐')+'</span><span>打倒乘法怪獸</span></div>'
+    +'<div class="row"><span>'+((S.mei&&S.zhe)?'☑':'☐')+'</span><span>幫小美和阿哲（'+((S.mei?1:0)+(S.zhe?1:0))+'/2）</span></div>'
+    +'<div class="row"><span>'+((S.madd&&S.mdiv)?'☑':'☐')+'</span><span>打倒加法與除法怪獸（'+((S.madd?1:0)+(S.mdiv?1:0))+'/2）</span></div>'
+    +'<div class="row"><span>'+(S.chest?'☑':'☐')+'</span><span>找到寶箱</span></div><div class="dim">老師之後可以在後台新增或調整任務。</div>';}
+  if(t==='island'){var I=[['我的島','可前往',22,96],['乘法怪獸島',S.monster?'已打倒':'有怪獸',30,40],['小美的島',S.monster?'可前往':'要先打倒怪獸',140,60],['阿哲的島','可前往',140,100]];
+    return '<h3>島嶼</h3>'+I.map(function(a,i){var ok=a[1]!=='要先打倒怪獸';return '<div class="row"><span style="flex:1">'+a[0]+'　<span class="dim">'+a[1]+'</span></span>'+(ok?'<button data-go="'+i+'">前往</button>':'<button disabled>🔒</button>')+'</div>';}).join('')+'<div class="dim">學生自己的島之後可以裝飾；也可以去同學的島幫忙。</div>';}
+  if(t==='bag'){return '<h3>背包</h3><div class="bag"><div class="it'+(S.chest?'':' off')+'"><span style="font-size:28px">🍬</span><span>糖果 ×'+(S.chest?1:0)+'</span></div><div class="it"><span style="font-size:28px">⭐</span><span>經驗 '+S.xp+'</span></div></div>'
+    +'<h3 style="margin-top:6px">徽章（高階思考）</h3><div class="bag" id="bdg"></div><div class="dim">分析：完成第一題　評鑑：打倒乘法怪獸　創造：幫兩位同學　怪獸剋星：打倒三隻怪獸</div>';}
+  return '';}
+function openTab(t){if(mode==='dlg')return;cur=t;Array.prototype.forEach.call(tabs.children,function(b){b.classList.toggle('on',b.dataset.t===t);});
+  if(t==='map'){panel.hidden=true;if(mode==='panel')mode='walk';return;}
+  mode='panel';panel.hidden=false;panel.innerHTML=render(t);
+  if(t==='bag'){var bd=document.getElementById('bdg');[['analyze','分析',S.done.length>=1],['evaluate','評鑑',S.monster],['create','創造',S.mei&&S.zhe],['evaluate','怪獸剋星',S.madd&&S.mdiv]].forEach(function(b){var it=document.createElement('div');it.className='it'+(b[2]?'':' off');it.appendChild(badge(b[0],!!b[2]));var s=document.createElement('span');s.textContent=b[1]+(b[2]?'':'（未解鎖）');it.appendChild(s);bd.appendChild(it);});}
+  if(t==='island'){Array.prototype.forEach.call(panel.querySelectorAll('button[data-go]'),function(b){b.onclick=function(){var P=[[22,96],[30,56],[140,64],[142,104]][+b.dataset.go];scene='island';player.x=P[0];player.y=P[1];openTab('map');};});}
+}
+tabs.children[0].classList.add('on');
+// 供測試用
+window.__pxTab=openTab;
+})();
+
+// ---- 8 位元合成音效（Web Audio，不用任何音檔；第一次操作後才會出聲）----
+(function(){
+var AC=null,muted=false;try{muted=localStorage.getItem('pxclass_mute')==='1';}catch(e){}
+function ac(){if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}}if(AC&&AC.state==='suspended'){try{AC.resume();}catch(e){}}return AC;}
+// 每個音：[頻率 Hz, 長度秒, 波形, 音量, 延遲秒]
+var SEQ={
+ step:[[110,0.035,'square',0.035,0]],
+ talk:[[520,0.025,'square',0.04,0]],
+ tab:[[620,0.03,'square',0.05,0]],
+ door:[[300,0.08,'triangle',0.09,0],[200,0.12,'triangle',0.09,0.08]],
+ good:[[660,0.07,'square',0.07,0],[880,0.12,'square',0.07,0.07]],
+ wrong:[[220,0.12,'sawtooth',0.06,0],[165,0.2,'sawtooth',0.06,0.11]],
+ levelup:[[523,0.09,'square',0.07,0],[659,0.09,'square',0.07,0.09],[784,0.09,'square',0.07,0.18],[1047,0.22,'square',0.07,0.27]],
+ chest:[[392,0.07,'square',0.07,0],[523,0.07,'square',0.07,0.07],[659,0.07,'square',0.07,0.14],[784,0.16,'square',0.07,0.21]],
+ win:[[392,0.1,'square',0.07,0],[392,0.1,'square',0.07,0.12],[392,0.1,'square',0.07,0.24],[523,0.3,'square',0.07,0.36]]};
+window.sfx=function(n){if(muted)return;var c=ac(),q=SEQ[n];if(!c||!q)return;var t0=c.currentTime;
+  q.forEach(function(a){var o=c.createOscillator(),g=c.createGain();o.type=a[2];o.frequency.value=a[0];var s=t0+a[4];
+    g.gain.setValueAtTime(0.0001,s);g.gain.exponentialRampToValueAtTime(a[3],s+0.005);g.gain.exponentialRampToValueAtTime(0.0001,s+a[1]);
+    o.connect(g);g.connect(c.destination);o.start(s);o.stop(s+a[1]+0.02);});};
+// 靜音鈕（放在經驗列旁）
+var hudEl=document.querySelector('.hud'),mb=document.createElement('button');mb.id='mute';mb.style.cssText='min-height:28px;padding:2px 8px;font-size:12px;box-shadow:2px 2px 0 var(--edge)';
+function lab(){mb.textContent=muted?'音效：關':'音效：開';}lab();
+mb.onclick=function(){muted=!muted;try{localStorage.setItem('pxclass_mute',muted?'1':'0');}catch(e){}lab();if(!muted)window.sfx('good');};
+hudEl.appendChild(mb);
+// 接到遊戲事件：對話、答對、升級、答錯、開門、走路、切換分頁
+var _say=say;say=function(w,t,c){if(/^先別急|^哼哼/.test(t))window.sfx('wrong');else if(/^嗚……/.test(t))window.sfx('win');else window.sfx('talk');return _say(w,t,c);};
+var lastXp=S.xp,_hud=hud;hud=function(){var before=lastXp;_hud();if(S.xp>before){if(Math.floor(S.xp/50)>Math.floor(before/50))window.sfx('levelup');else window.sfx((S.xp-before)===10?'chest':'good');}lastXp=S.xp;};
+var _go=go;go=function(to){window.sfx('door');return _go(to);};
+Array.prototype.forEach.call(document.querySelectorAll('.tabs button'),function(b){b.addEventListener('click',function(){window.sfx('tab');});});
+setInterval(function(){if(mode==='walk'&&(keys.up||keys.down||keys.left||keys.right))window.sfx('step');},210);
+})();
+
+// ---- 對話頭像：依說話者顯示 ----
+(function(){
+var PORT={"robot_ta": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAlklEQVR4nGNUNbH9z4ADnO0VBNPGxe9xKWFgYqAQsOCT7DjuAmWtpp0LGGFhoGY9kySNt46mY3rhwppIojQbhCynYiCKKmajCKQcPQym51jb4hWH6WOi1AVMVE8Hc9CcTkic5fX9qWCGoBRqNF5fJo/C14x6iMKH6WPB5TR0DbgAigHI8UssgKdEZIAetTAAczYyoDgWACyTJ6TyFrucAAAAAElFTkSuQmCC", "teacher_lady": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAp0lEQVR4nGNUNbH9z4AFuEnEovB3vViMTRkDEwOFgBHdBeg2owN0lzCRohmbGiZSNGNTy8RAIWBBF2ivZcOrobL5FwqfCV2BZlA/Co1LDKcB19cVghXCaGQ2iCboBWSATQNBF3zbfg6rRpAYSI6gAVyeRnA2zAvY5HCmRAYoODs1GYVvnD0XqxfgYZBp3oQm9RCFhy4//WQdqgHoYM4ieVxSKIDilAgAR+U4T11qNWEAAAAASUVORK5CYII=", "student_boy_red": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAk0lEQVR4nGNUNbH9z0ABYGKgELCgC3D9xm/mN9Z/uF3ARUAzNjVMDBQCJqqHAQgcnpXIgA3Yps2nsQsOQ23WDOpnuL6uEEUhsphx9lzquYAJXeDb9nMYtoMASAwkhw4Y0ZPy2anJKM6GaYYBZOdjNYABi0HYNMIAPBC3qLNhVYBL3ufmL1QD0MHzSYvxGggDFMcCAHPlLc2jzggtAAAAAElFTkSuQmCC", "student_girl_yellow": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAoUlEQVR4nGNUNbH9z0ABYGKgELCgC5iyPcSr4fQvedwuMCWgGZsaJhBx2DubgVQA08MICkRibMblHRZsEjP6m7BqyCiswxBjRHYBLo24DAK5gAmbAs2gfqLEqJIOmNAFvm0/x3B9XSGGQpAYSA5rGDAggbNTkzGcjWygcfZc/AYwYDEIm0YYgEfj2V5BrApwyRsXv0c1AAP8WIfXQBigOBYAbA42PvnhUG4AAAAASUVORK5CYII=", "student_boy_blue": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAApElEQVR4nGNUNbH9z0ABYGKgELCgC3x7/gmvBi5JPtwu+EZAMzY1TAwUAiaqhwEI7Ov1ZMAGnIq3E+8CJyTF2DRidcE+qM0gDSA2TCOMDZP36TmK3QBivYLXC/w3vmHVCBIDyeE1wKfnKMNHDS44H+RsZP+D5JCdDwKMuPLClhJrFD66RhiAh4Ga9Uw0qUUoPHT5W0fTUQ1AB0XH43BJoQCKUyIAAXs3/edtGbsAAAAASUVORK5CYII=", "student_girl_pink": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAkUlEQVR4nGNUNbH9z0ABYGKgELCgC3D9xm/mN9Z/uF3ARUAzNjVMpGjGppaJgdphcHhWIl4NtmnzUfhMlLqACZugZlA/UWK0ccG37ecYrq8rxFAIEgPJETSAy9MIxdnITkeWgwFGXHnh7NRkFL5x9lysXoBH42HvbDSpHyg8dHnbrVNRDUAH37Zx4JJCARTHAgAGBCWma2A2uQAAAABJRU5ErkJggg==", "student_boy_green": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAnklEQVR4nGNUNbH9z0ABYGKgELCgC6SpvcOrYdYtIdwuSCOgGZsaJgYKARPVwwAE7EwtGLCBQ6dPYIgxMVAImNBtBuGgnjMYCkFiMHnauQAE5D9yM6wrMWFAByAxkBxeA2KW3mJ4yP8VxdnI3gHJgdQgA0ZceWFJtBoKH10jDMCj0arbFlXmwksULrr8sdLDqAagg2kG4rikUADFsQAARXQrk7iM5HIAAAAASUVORK5CYII=", "student_girl_purple": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAnUlEQVR4nGNUNbH9z0ABYGKgELCgC3x7/gmvBi5JPtwu+EZAMzY1TCDisHc2A6kApocRFIjE2IzLOyzYJK6vK8SqQTOoH0OMhRiN6PLIBjERaxM2MZwGkAKY0AW+bT+H1SsgMZAcOmBET8pnpyZjOBvZQOPsufgNYMBiEDaNMACPhVC13WhSK1B46PKrb7miGoAOOiZG4JJCARTHAgBBKzdGvkHzSwAAAABJRU5ErkJggg==", "monster_mul": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAiElEQVR4nGNUNbH9z0ABYELmpLGpgjEugE2eiYFCwILLJmIBEzmakNUyMVDbCyVH58LZPdbJOMXwukBGxoAoMZwGkAIYYQmJlEAEgVm/bmMPgwkPzzI8eXIB7GRkGgRA7AJ5Y8LpQAbqX3Sa6DB4ArURmYax0QHFYQB3AUyAFM0ggBIGpBgCAwDATjST0D/6dAAAAABJRU5ErkJggg==", "monster_add": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAhElEQVR4nGNUNbH9z0ABYELmiHo3gTEugE2eiYFCwILLJmIBEzmakNUyMVDbC0cbHOBs64YDOMXwukBGxoAoMZwGkAIYYQmJlEAEgddb67CHwcM5BQxPnlwAOxmZBgEQWz5lAuF0IAP1LzpNdBg8gdqITMPY6IDiMIC7ACZAimYUF5ALAPgmNUtHSSc6AAAAAElFTkSuQmCC", "monster_div": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAhUlEQVR4nGNUNbH9z0ABYELmiEbrgTEugE2eiYFCwILLJmIBEzmakNUyMVDbC0cLpsDZ1hNycIrhdYGMjAFRYjgNIAUwwhISKYEIAq+XXsIeBg97jjA8eXIB7GRkGgRAbPkSG8LpQAbqX3Sa6DB4ArURmYax0QHFYQB3AUyAFM0oLiAXAADQ9DP36cDpzAAAAABJRU5ErkJggg=="},IM={};Object.keys(PORT).forEach(function(k){var i=new Image();i.src=PORT[k];IM[k]=i;});
+var MAP={'小數助教':'robot_ta','老師':'teacher_lady','同學小安':'student_girl_pink','同學小文':'student_boy_green','小美':'student_girl_yellow','阿哲':'student_boy_blue','乘法怪獸':'monster_mul','加法怪獸':'monster_add','除法怪獸':'monster_div'};
+var pc=document.createElement('canvas');pc.width=16;pc.height=16;pc.id='pt';pc.style.cssText='position:absolute;right:10px;top:10px;width:56px;height:56px;image-rendering:pixelated;border:3px solid var(--btn);background:var(--panel);display:none';
+dlgEl=document.getElementById('dlg');dlgEl.style.position='relative';dlgEl.appendChild(pc);
+function show(w){var k=MAP[w];if(!k||!IM[k]){pc.style.display='none';txt.style.paddingRight='0';return;}
+  var x=pc.getContext('2d');x.imageSmoothingEnabled=false;var draw=function(){x.clearRect(0,0,16,16);x.drawImage(IM[k],0,0);};
+  if(IM[k].complete)draw();else IM[k].onload=draw;pc.style.display='block';txt.style.paddingRight='66px';}
+var _say2=say;say=function(w,t,c){show(w);return _say2(w,t,c);};
+var _end2=end;end=function(){pc.style.display='none';txt.style.paddingRight='0';return _end2();};
+})();
+
+// ---- 像素特效：粒子（星星爆開、升級光柱、寶箱閃光、灰塵、答錯微震）----
+(function(){
+var P=[],reduce=false;try{reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;}catch(e){}
+function add(o){P.push(o);if(P.length>160)P.shift();}
+function burst(x,y,cols,n,sp){for(var i=0;i<n;i++){var a=Math.PI*2*i/n+Math.random()*0.4,v=sp*(0.6+Math.random()*0.6);add({k:'dot',x:x,y:y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-10,g:60,life:0.55+Math.random()*0.2,age:0,c:cols[i%cols.length],s:2});}}
+function star(x,y){add({k:'star',x:x,y:y,vx:0,vy:-8,g:0,life:0.6,age:0});}
+function pillar(x,y){add({k:'pillar',x:x,y:y,life:0.9,age:0});for(var i=0;i<14;i++)add({k:'dot',x:x+(Math.random()*12-6),y:y,vx:0,vy:-40-Math.random()*40,g:0,life:0.8,age:0,c:['#F2C14E','#FFFFFF','#7FE0F2'][i%3],s:1});}
+function dust(x,y){for(var i=0;i<3;i++)add({k:'dot',x:x,y:y,vx:(Math.random()-0.5)*20,vy:-6-Math.random()*6,g:20,life:0.28,age:0,c:'#D9C9A0',s:1});}
+function sparkle(x,y){for(var i=0;i<8;i++)add({k:'plus',x:x+Math.random()*12-2,y:y+Math.random()*6,vx:0,vy:-14-Math.random()*10,g:0,life:0.7+Math.random()*0.3,age:-i*0.05,c:'#F2C14E'});}
+var shakeT=0;
+function onsfx(n){var px=player.x+5,py=player.y;
+  if(n==='good')burst(px,py,['#F2C14E','#FFFFFF'],12,40),star(px,py-6);
+  else if(n==='levelup')pillar(player.x+5,player.y+12),burst(px,py,['#F2C14E','#7FE0F2','#FFFFFF'],18,55),star(px,py-8);
+  else if(n==='chest')sparkle(44,70);
+  else if(n==='win')burst(px,py-2,['#8B3A62','#3A7FBF','#3A8F6B','#FFFFFF','#F2C14E'],24,62),star(px,py-10);
+  else if(n==='wrong'&&!reduce){shakeT=0.25;}
+  else if(n==='step')dust(player.x+4+Math.random()*3,player.y+13);}
+var _s=window.sfx;window.sfx=function(n){try{onsfx(n);}catch(e){}return _s(n);};
+window.__fxDraw=function(c,t,dt){
+  if(shakeT>0){shakeT-=dt;var m=shakeT>0&&!reduce?(Math.random()>0.5?2:-2):0;cv.style.transform=m?'translate('+m+'px,'+(m>0?-1:1)+'px)':'';if(shakeT<=0)cv.style.transform='';}
+  for(var i=P.length-1;i>=0;i--){var p=P[i];p.age+=dt;if(p.age<0)continue;if(p.age>=p.life){P.splice(i,1);continue;}
+    var f=1-p.age/p.life;
+    if(p.k==='dot'){p.vy+=p.g*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;c.fillStyle=p.c;c.globalAlpha=Math.min(1,f*1.6);c.fillRect(Math.round(p.x),Math.round(p.y),p.s,p.s);}
+    else if(p.k==='star'){p.y+=p.vy*dt;var r=Math.max(1,Math.round(4*f)),x=Math.round(p.x),y=Math.round(p.y);c.fillStyle='#F2C14E';c.globalAlpha=Math.min(1,f*1.6);c.fillRect(x-r,y,r*2+1,1);c.fillRect(x,y-r,1,r*2+1);c.fillStyle='#FFFFFF';c.fillRect(x,y,1,1);}
+    else if(p.k==='plus'){p.y+=p.vy*dt;c.fillStyle=p.c;c.globalAlpha=Math.min(1,f*1.6);var x=Math.round(p.x),y=Math.round(p.y);c.fillRect(x-1,y,3,1);c.fillRect(x,y-1,1,3);}
+    else if(p.k==='pillar'){var w=Math.round(4+10*Math.sin(Math.PI*(p.age/p.life))),h=Math.round(56*Math.min(1,p.age/0.25));c.globalAlpha=Math.min(1,f*1.4)*0.92;
+      for(var yy=0;yy<h;yy+=2){c.fillStyle=(yy/2)%2?'#FFFFFF':'#F2C14E';c.fillRect(Math.round(p.x-w/2),Math.round(p.y-yy),w,1);c.fillStyle='#4BB8D6';c.fillRect(Math.round(p.x-w/2)-1,Math.round(p.y-yy),1,1);c.fillRect(Math.round(p.x+w/2),Math.round(p.y-yy),1,1);}}
+    c.globalAlpha=1;}
+};
+window.__fxCount=function(){return P.length;};
+})();
+
+// ---- 題庫：啟動時讀後端、後台題庫編輯器 ----
+function loadBanks(){var ep=endpoint();if(!ep)return;
+  fetch(ep+'/questions').then(function(r){return r.ok?r.json():null;}).then(function(d){if(!d||!d.banks)return;
+    function fill(a,b){if(b&&b.length){a.length=0;b.forEach(function(x){a.push(x);});}}
+    fill(Q,d.banks.tasks);fill(QMUL,d.banks.mul);fill(QADD,d.banks.add);fill(QDIV,d.banks.div);
+    S.done=S.done.filter(function(i){return i<Q.length;});hud();}).catch(function(){});}
+loadBanks();
+(function(){var st=document.createElement('style');st.textContent='.qi{border:2px solid var(--btn);padding:6px;margin-top:6px}.qi input[data-f],.qi textarea{width:100%;box-sizing:border-box;display:block;margin-top:4px;font:inherit;font-size:13px;background:var(--bg,#1b262c);color:inherit;border:2px solid var(--btn);padding:4px 6px}.qi .askf{align-items:center;gap:6px}#qsel,.qi select{font:inherit;font-size:13px}';document.head.appendChild(st);})();
+function qesc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function qCheck(banks,names){
+  for(var k in names){var L=banks[k];
+    if(!L||L.length<1||L.length>8)return names[k]+' 要有 1 到 8 題';
+    for(var i=0;i<L.length;i++){var x=L[i],p=names[k]+' 第 '+(i+1)+' 題';
+      if(!x.q.trim()||x.q.length>80)return p+'的題目要 1 到 80 字';
+      if(x.hint.length>80)return p+'的提示超過 80 字';
+      if(x.c.length<2||x.c.length>4)return p+'的選項要 2 到 4 個';
+      for(var j=0;j<x.c.length;j++)if(x.c[j].length>20)return p+'的選項超過 20 字';
+      if(x.a<0||x.a>=x.c.length)return p+'的正解編號不在選項內';}}
+  return '';}
+function qEditor(srv,msgEl){
+  var box=document.getElementById('qed'),qd=null,qk='tasks',resetArm=null;
+  function say2(t){msgEl.textContent=t;}
+  function draw(){var L=qd.banks[qk];
+    var h='<div class="askf"><select id="qsel">'+Object.keys(qd.names).map(function(k){return '<option value="'+k+'"'+(k===qk?' selected':'')+'>'+qd.names[k]+'（'+qd.banks[k].length+' 題）</option>';}).join('')+'</select></div>'
+      +'<div class="note" style="margin-top:4px">目前版本 '+qd.version+(qd.by?'，'+qesc(qd.by):'')+(qd.updated?' '+qesc(qd.updated):'')+'。每個題庫 1 到 8 題；題目和提示 80 字內；選項 2 到 4 個、每個 20 字內。</div>';
+    L.forEach(function(x,i){
+      h+='<div class="qi" data-i="'+i+'"><div class="askf"><b>第 '+(i+1)+' 題</b><button data-act="del">刪除</button></div>'
+        +'<input data-f="q" maxlength="80" value="'+qesc(x.q)+'" placeholder="題目">'
+        +'<textarea data-f="c" rows="3" placeholder="選項，每行一個（2 到 4 個）">'+qesc(x.c.join('\n'))+'</textarea>'
+        +'<div class="askf"><span class="note">正解是第</span><select data-f="a">'+[0,1,2,3].map(function(n){return '<option value="'+n+'"'+(n===x.a?' selected':'')+'>'+(n+1)+'</option>';}).join('')+'</select><span class="note">個選項</span></div>'
+        +'<input data-f="hint" maxlength="80" value="'+qesc(x.hint)+'" placeholder="答錯時的提示（不直接給答案）"></div>';});
+    h+='<div class="askf" style="margin-top:6px"><button data-act="add"'+(L.length>=8?' disabled':'')+'>新增一題</button><button data-act="save" class="main">儲存題庫</button><button data-act="reset">還原預設</button></div>';
+    box.innerHTML=h;
+    document.getElementById('qsel').onchange=function(){qk=this.value;draw();};
+    Array.prototype.forEach.call(box.querySelectorAll('.qi'),function(el){var i=+el.dataset.i;
+      Array.prototype.forEach.call(el.querySelectorAll('[data-f]'),function(f){f.oninput=f.onchange=function(){var x=qd.banks[qk][i],k=f.dataset.f;
+        if(k==='c')x.c=f.value.split('\n').map(function(s){return s.trim();}).filter(Boolean);else if(k==='a')x.a=+f.value;else x[k]=f.value;};});});
+    Array.prototype.forEach.call(box.querySelectorAll('[data-act]'),function(b){b.onclick=function(){var a=b.dataset.act,el=b.closest('.qi');
+      if(a==='del'){if(qd.banks[qk].length<=1){say2('每個題庫至少要留 1 題。');return;}qd.banks[qk].splice(+el.dataset.i,1);draw();}
+      else if(a==='add'){qd.banks[qk].push({q:'',c:['',''],a:0,hint:''});draw();}
+      else if(a==='save'){var e=qCheck(qd.banks,qd.names);if(e){say2(e);return;}
+        srv('/admin/questions',{banks:qd.banks},function(c,d){if(c===200){say2('已儲存，題庫版本 '+d.version+'。學生重新整理後會看到新題目。');load();}else say2(d.error||'儲存失敗');});}
+      else if(a==='reset'){if(!resetArm){b.textContent='再按一次確認還原';resetArm=setTimeout(function(){resetArm=null;if(b.isConnected)b.textContent='還原預設';},6000);return;}
+        clearTimeout(resetArm);resetArm=null;srv('/admin/questions',{reset:true},function(c,d){if(c===200){say2('已還原成預設題庫（版本 '+d.version+'）。');load();}else say2(d.error||'還原失敗');});}};});}
+  function load(){srv('/admin/questions',null,function(c,d){if(c===200){qd=d;if(!qd.banks[qk])qk='tasks';draw();}else say2(d.error||'讀取失敗');});}
+  load();}
+// ---- 互動物件 ----
+function objects(){
+  if(scene==='classroom'){var T=[{n:'robot',x:robot.x+6,y:robot.y+10,r:24},{n:'door',x:96,y:136,r:22},{n:'teacher',x:39,y:52,r:20},{n:'questboard',x:155,y:52,r:18},{n:'mate1',x:49,y:106,r:18},{n:'mate2',x:145,y:106,r:18},{n:'board',x:80,y:34,r:26},{n:'shelf',x:176,y:30,r:22}];
+    DESKS.forEach(function(p){T.push({n:'desk',x:p[0]*16+16,y:p[1]*16+20,r:20});});return T;}
+  var L=[{n:'house',x:27,y:92,r:20},{n:'chest',x:50,y:84,r:16},{n:'monster',x:36,y:34,r:24},{n:'mei',x:143,y:34,r:22},{n:'zhe',x:143,y:100,r:22}];
+  if(S.monster&&!S.madd)L.push({n:'madd',x:168,y:28,r:17});
+  if(S.monster&&!S.mdiv)L.push({n:'mdiv',x:156,y:112,r:17});
+  return L;}
+function near(){var cx=player.x+5,cy=player.y+10,T=objects(),best=null,bd=1e9;
+  for(var i=0;i<T.length;i++){var t=T[i];if(t.n==='robot'||t.n==='door'||t.n==='house'||t.n==='monster'||t.n==='chest'||t.n==='madd'||t.n==='mdiv'){if(Math.hypot(cx-t.x,cy-t.y)<t.r)return t;}}
+  T.forEach(function(t){var d=Math.hypot(cx-t.x,cy-t.y);if(d<t.r&&d<bd){bd=d;best=t;}});return best;}
+function act(){
+  if(mode==='dlg')return;
+  var t=near();if(!t){say('提示','附近沒有可以調查的東西。');return;}
+  if(t.n==='robot'){mode='dlg';say('小數助教','要做任務，還是問我問題？',[{t:'做任務',f:ask},{t:'問助教',f:openAsk},{t:'再見',f:end}]);}
+  else if(t.n==='door'){mode='dlg';say('教室出口','要出發去島嶼嗎？',[{t:'出發',f:function(){go('island');end();}},{t:'留在教室',f:end}]);}
+  else if(t.n==='house'){mode='dlg';say('我的小屋','要回教室嗎？',[{t:'回教室',f:function(){go('classroom');end();}},{t:'再逛逛',f:end}]);}
+  else if(t.n==='monster'){mode='dlg';if(S.monster)say('乘法怪獸','我已經被你打倒了，去別的島看看吧。',[{t:'好',f:end}]);else say('乘法怪獸','想過橋嗎？連續答對 '+QMUL.length+' 題才行！',[{t:'挑戰',f:function(){battle(0);}},{t:'先不要',f:end}]);}
+  else if(t.n==='madd'){mode='dlg';say('加法怪獸','我是加法怪獸！連續答對 '+QADD.length+' 題，我就讓你過。',[{t:'挑戰',f:function(){fight('madd','加法怪獸',QADD,'嗚……我的加法被你識破了！（+50 經驗）',0);}},{t:'先不要',f:end}]);}
+  else if(t.n==='mdiv'){mode='dlg';say('除法怪獸','我是除法怪獸！分得公平才算贏。連續答對 '+QDIV.length+' 題吧！',[{t:'挑戰',f:function(){fight('mdiv','除法怪獸',QDIV,'嗚……你分得真公平！（+50 經驗）',0);}},{t:'先不要',f:end}]);}
+  else if(t.n==='mei'){if(!S.monster){mode='dlg';say('橋','橋還沒放下來。先去打倒乘法怪獸。',[{t:'知道了',f:end}]);}else helpNpc('mei','小美','我卡在「分糖果」的題目，可以教我嗎？','小美：原來每盒要先分一樣多，我懂了！');}
+  else if(t.n==='zhe'){helpNpc('zhe','阿哲','九九乘法第 7 題我一直算不出來……','阿哲：原來可以用加的算，謝謝！');}
+  else if(t.n==='teacher'){mode='dlg';say('老師','歡迎來到數學養成島！先跟助教聊聊，完成任務就能出發去島嶼。記得：不會的題目不用急，先說說你的想法。',[{t:'好的',f:end}]);}
+  else if(t.n==='mate1'){mode='dlg';say('同學小安','我昨天分糖果分了三次才對。你可以去找助教，牠會用問題提示你。',[{t:'謝謝',f:end}]);}
+  else if(t.n==='mate2'){mode='dlg';say('同學小文','聽說乘法怪獸很兇，要連續答對 '+QMUL.length+' 題才能過橋！',[{t:'我會加油',f:end}]);}
+  else if(t.n==='questboard'){mode='dlg';var d=S.done.length;say('任務板','今天的任務：\n'+(d>=Q.length?'☑':'☐')+' 跟助教完成 '+Q.length+' 題（'+Math.min(d,Q.length)+'/'+Q.length+'）\n'+(S.monster?'☑':'☐')+' 打倒乘法怪獸\n'+((S.mei&&S.zhe)?'☑':'☐')+' 幫小美和阿哲（'+((S.mei?1:0)+(S.zhe?1:0))+'/2）\n'+((S.madd&&S.mdiv)?'☑':'☐')+' 打倒加法與除法怪獸（'+((S.madd?1:0)+(S.mdiv?1:0))+'/2）'+'\n'+(S.chest?'☑':'☐')+' 找到寶箱',[{t:'知道了',f:end}]);}
+  else if(t.n==='chest'){mode='dlg';if(S.chest)say('寶箱','寶箱已經是空的了。',[{t:'好',f:end}]);else{S.chest=true;S.xp+=10;save();hud();say('寶箱','你打開寶箱，找到一包糖果！（+10 經驗）',[{t:'太棒了',f:end}]);}}
+  else if(t.n==='board'){mode='dlg';say('黑板','黑板上寫著今天的題目：2 × 3 = ？',[{t:'知道了',f:end}]);}
+  else if(t.n==='shelf'){mode='dlg';say('書架','整排的數學繪本與習作。（示意：之後可以放老師準備的教材）',[{t:'知道了',f:end}]);}
+  else{mode='dlg';say('課桌','同學留下的作業本，旁邊寫著：「分糖果好難喔……」（示意：同學的求助任務會出現在這裡）',[{t:'知道了',f:end}]);}
+}
+document.getElementById('act').onclick=act;
+// ---- 輸入 ----
+var keys={};
+var MAP={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',w:'up',s:'down',a:'left',d:'right',W:'up',S:'down',A:'left',D:'right'};
+addEventListener('keydown',function(e){if(e.target&&e.target.tagName==='INPUT')return;if(MAP[e.key]){keys[MAP[e.key]]=true;e.preventDefault();}
+  else if(e.key==='e'||e.key==='E'||e.key===' '||e.key==='Enter'){if(mode==='walk'){e.preventDefault();act();}}});
+addEventListener('keyup',function(e){if(e.target&&e.target.tagName==='INPUT')return;if(MAP[e.key])keys[MAP[e.key]]=false;});
+Array.prototype.forEach.call(document.querySelectorAll('.dpad button'),function(b){var d=b.dataset.d;
+  var on=function(e){e.preventDefault();keys[d]=true;},off=function(e){e.preventDefault();keys[d]=false;};
+  b.addEventListener('pointerdown',on);b.addEventListener('pointerup',off);b.addEventListener('pointerleave',off);b.addEventListener('pointercancel',off);});
+var LBL=[['我的島',6,121],['乘法怪獸',6,47],['小美的島',108,52],['阿哲的島',108,134]],lb=document.getElementById('lbls');
+LBL.forEach(function(l){var d=document.createElement('span');d.textContent=l[0];d.className='lbl';d.dataset.x=l[1];d.dataset.y=l[2];lb.appendChild(d);});
+function fit(){var avail=Math.min(document.querySelector('.stage').clientWidth-28,720),s=avail/W>=2?Math.floor(avail/W):Math.max(1,avail/W);
+  cv.style.width=(W*s)+'px';cv.style.height=(H*s)+'px';
+  Array.prototype.forEach.call(lb.children,function(d){d.style.left=(d.dataset.x*s)+'px';d.style.top=(d.dataset.y*s)+'px';d.style.fontSize=Math.max(11,Math.round(s*5.2))+'px';});}
+addEventListener('resize',fit);fit();
+// 供自動測試讀取（不影響遊戲）
+window.__px={st:function(){return {scene:scene,x:player.x,y:player.y,mode:mode,S:S,U:U,CAPS:CAPS};},warp:function(sc,x,y){scene=sc;player.x=x;player.y=y;}};
+// ---- 主迴圈 ----
+var last=performance.now(),hintEl=document.getElementById('hint');
+function frame(t){var dt=Math.min(0.05,(t-last)/1000);last=t;
+  if(mode==='walk'){var dx=(keys.right?1:0)-(keys.left?1:0),dy=(keys.down?1:0)-(keys.up?1:0);
+    if(dx||dy){var sp=52*dt,l=Math.hypot(dx,dy);dx=dx/l*sp;dy=dy/l*sp;
+      if(!hit(player.x+dx,player.y))player.x+=dx;if(!hit(player.x,player.y+dy))player.y+=dy;
+      if(dx)player.dir=dx>0?1:-1;player.f4=Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up');player.step+=dt*8;}}
+  var nr=near();hintEl.textContent=(mode==='walk'&&nr)?'▶ 按 E 或「調查」':'';
+  ctx.clearRect(0,0,W,H);lb.hidden=(scene!=='island');
+  var list=[];
+  if(scene==='classroom'){if(bg.complete)ctx.drawImage(bg,0,0);
+    ctx.fillStyle='#5A3A1E';ctx.fillRect(80,134,32,10);ctx.fillStyle='#7A4F2A';ctx.fillRect(83,137,26,7);ctx.fillStyle='#F2C14E';ctx.fillRect(104,140,2,2);
+    list.push({y:robot.y+14,f:function(){drawSheet2('robot_ta',12,14,t,robot.x,robot.y+(Math.sin(t/400)>0.6?-1:0));}});
+    list.push({y:56,f:function(){drawPerson('teacher_lady','right',false,t,30,40);}});
+    list.push({y:110,f:function(){drawPerson('student_girl_pink','up',false,t,44,96);}});
+    list.push({y:110,f:function(){drawPerson('student_boy_green','up',false,t,140,96);}});
+    list.push({y:58,f:function(){drawObj('sign_board',150,42);}});}
+  else{ctx.drawImage(isl,0,0);
+    if(!S.monster){ctx.fillStyle='#D95B43';ctx.fillRect(116,24,16,3);ctx.fillRect(116,31,16,3);ctx.fillRect(122,22,4,14);}
+    if(!S.monster)list.push({y:50,f:function(){drawSheet2('monster_mul',12,11,t,30,26);}});
+    if(S.monster&&!S.madd)list.push({y:40,f:function(){drawSheet2('monster_add',12,11,t,162,19);}});
+    if(S.monster&&!S.mdiv)list.push({y:122,f:function(){drawSheet2('monster_div',12,11,t,150,103);}});
+    list.push({y:48,f:function(){drawPerson('student_girl_yellow','down',false,t,138,26);}});
+    list.push({y:114,f:function(){drawPerson('student_boy_blue','down',false,t,138,92);}});
+    list.push({y:86,f:function(){drawObj('house',17,72);}});
+    if(!S.chest)list.push({y:86,f:function(){drawObj('chest',44,78);}});
+    [[46,106],[12,114],[118,36],[166,90],[116,110],[148,42]].forEach(function(q){list.push({y:q[1]+11,f:function(){drawObj('tree',q[0],q[1]);}});});}
+  list.push({y:player.y+14,f:function(){drawPerson('student_boy_red',player.f4,(keys.up||keys.down||keys.left||keys.right),t,player.x,player.y);}});
+  list.sort(function(a,b){return a.y-b.y;}).forEach(function(o){o.f();});
+  if(mode==='walk'&&nr){ctx.fillStyle='#F2C14E';var bx=Math.round(player.x)+3,by=Math.round(player.y)-8;ctx.fillRect(bx,by,5,5);ctx.fillStyle='#1B1B2F';ctx.fillRect(bx+2,by+1,1,2);ctx.fillRect(bx+2,by+4,1,1);}
+  if(window.__fxDraw)window.__fxDraw(ctx,t,dt);
+  requestAnimationFrame(frame);}
+requestAnimationFrame(frame);
+})();
+</script>
