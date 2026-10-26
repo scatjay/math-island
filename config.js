@@ -1,7 +1,7 @@
 // 部署時填：後端網址與 Firebase 登入設定。這個檔案沒有任何機密：
 // firebase 設定是網頁公開用的識別資料；金鑰（Gemini）只在後端；allowedHashes 是允許登入帳號的雜湊，不是信箱。
 window.PX_CONFIG = {
-  backend: "",            // 例："https://pxclass-api-xxxx.a.run.app"（空白＝示意回覆）
+  backend: "https://pxclass-api-123487216321.asia-east1.run.app",            // 例："https://pxclass-api-xxxx.a.run.app"（空白＝示意回覆）
   googleClientId: "",     // 舊的登入方式，改用 Firebase 後不需要
   firebase: {
       "apiKey": "AIzaSyBwPR0oE5VK0eBlqq8JY1B56UXy3R9cyng",
