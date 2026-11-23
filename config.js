@@ -8,8 +8,5 @@ window.PX_CONFIG = {
       "authDomain": "gen-lang-client-0929530380.firebaseapp.com",
       "projectId": "gen-lang-client-0929530380"
   },
-  allowedHashes: [
-      "a4359be1abd8e2cb8cb5b3a0b310e2d99dae271fce038f1d3958ccc1b0b2bad1",
-      "b91e87bba040374cdc2106969289769684b103cbd1e7bc4b8deaa29f39f4d760"
-  ]       // 目前只開放兩位老師；之後要開放學生，改成空陣列（不限帳號）或加入雜湊
+  allowedHashes: ["a4359be1abd8e2cb8cb5b3a0b310e2d99dae271fce038f1d3958ccc1b0b2bad1", "132fe3910eb04a83377f5721b34a10977f64f750a2c161c67ddeca1e3e7ef959"]       // 目前只開放兩位老師；之後要開放學生，改成空陣列（不限帳號）或加入雜湊
 };
