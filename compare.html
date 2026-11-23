@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>風格版本比較</title>
+<style>
+:root{--bg:#F4F1EA;--panel:#FFFFFF;--fg:#22302A;--dim:#5E6B64;--line:#D9D3C6;--acc:#2F7D6B;--accbg:#E3F1EC}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#171C1A;--panel:#202725;--fg:#E8EEEA;--dim:#9DAAA3;--line:#33403B;--acc:#7FD1BC;--accbg:#22362F}}
+:root[data-theme="dark"]{--bg:#171C1A;--panel:#202725;--fg:#E8EEEA;--dim:#9DAAA3;--line:#33403B;--acc:#7FD1BC;--accbg:#22362F}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;line-height:1.6}
+.wrap{max-width:1100px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:22px;margin:0 0 4px}
+.sub{color:var(--dim);font-size:14px;margin:0 0 16px}
+.sub a{color:var(--acc)}
+[role=tablist]{display:flex;gap:6px;flex-wrap:wrap;border-bottom:2px solid var(--line);margin-bottom:16px}
+[role=tab]{font:inherit;font-size:15px;background:none;border:0;border-bottom:3px solid transparent;margin-bottom:-2px;padding:10px 14px;color:var(--dim);cursor:pointer;min-height:44px}
+[role=tab][aria-selected=true]{color:var(--fg);border-bottom-color:var(--acc);font-weight:700}
+[role=tab] small{display:block;font-size:12px;font-weight:400;color:var(--dim)}
+[role=tabpanel][hidden]{display:none}
+.tag{display:inline-block;font-size:12px;background:var(--accbg);color:var(--acc);padding:2px 8px;border-radius:99px;margin-right:6px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;margin-top:12px}
+figure{margin:0;background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+figure img{display:block;width:100%;height:auto}
+figcaption{padding:8px 12px;font-size:14px;color:var(--dim)}
+.note{font-size:14px;color:var(--dim);margin:8px 0 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>數學養成島｜風格版本比較</h1>
+  <p class="sub">每一版的樣張都留一個分頁，方便前後比較。立體浮島的兩種風格目前只有樣張，<b>遊戲畫面還沒有換</b>；吳老師選定方向後才會全面替換。<a href="./">回到遊戲</a></p>
+
+  <div role="tablist" aria-label="風格版本">
+    <button role="tab" id="t-pixel" aria-controls="p-pixel" aria-selected="false" tabindex="-1">像素 RPG<small>現行遊戲</small></button>
+    <button role="tab" id="t-soft1" aria-controls="p-soft1" aria-selected="true">寫實立體浮島<small>樣張 v1｜11/23</small></button>
+    <button role="tab" id="t-poly1" aria-controls="p-poly1" aria-selected="false" tabindex="-1">低多邊形卡通<small>樣張 v1｜11/23</small></button>
+  </div>
+
+  <section role="tabpanel" id="p-pixel" aria-labelledby="t-pixel" hidden>
+    <span class="tag">現行遊戲</span><span class="tag">保留為選項之一</span>
+    <div class="grid">
+      <figure><img src="samples/v1123/pixel_island.jpg" alt="像素風的島嶼畫面：四座小島、木橋、怪獸與同學" loading="lazy"><figcaption>島嶼（遊戲實際畫面）</figcaption></figure>
+      <figure><img src="samples/v1123/pixel_world.jpg" alt="像素風的大地圖：小船在海上，右邊是迷霧區" loading="lazy"><figcaption>大地圖與迷霧（遊戲實際畫面）</figcaption></figure>
+    </div>
+  </section>
+
+  <section role="tabpanel" id="p-soft1" aria-labelledby="t-soft1">
+    <span class="tag">Blender 3D 渲染</span><span class="tag">樣張，未進遊戲</span>
+    <div class="grid">
+      <figure><img src="samples/v1123/island3d_map_overview.jpg" alt="寫實立體浮島全景：中央廣場島，八座教室浮島以吊橋相連"><figcaption>大地圖概念：中央廣場島＋八間主題教室浮島，以吊橋相連</figcaption></figure>
+      <figure><img src="samples/v1123/island3d_close_up.jpg" alt="寫實立體浮島近景：岩山、池塘、樹林、吉祥物小算與兩位學生"><figcaption>近景：岩山、池塘、樹林，吉祥物「小算」與學生</figcaption></figure>
+    </div>
+    <p class="note">每間教室旁有主題道具：× 乘法、+ 加法、÷ 除法、圓餅分數、鐘塔、金幣、積木圖形、長條圖。吉祥物與角色都是自己設計的。</p>
+  </section>
+
+  <section role="tabpanel" id="p-poly1" aria-labelledby="t-poly1" hidden>
+    <span class="tag">Blender 3D 渲染</span><span class="tag">樣張，未進遊戲</span>
+    <div class="grid">
+      <figure><img src="samples/v1123/lowpoly_map_overview.jpg" alt="低多邊形卡通浮島全景：稜角分明的浮島與吊橋" loading="lazy"><figcaption>大地圖概念（同一套場景，低多邊形平塗）</figcaption></figure>
+      <figure><img src="samples/v1123/lowpoly_close_up.jpg" alt="低多邊形卡通浮島近景：稜角樹木、岩山與吉祥物" loading="lazy"><figcaption>近景：糖果色、稜角分明</figcaption></figure>
+    </div>
+  </section>
+</div>
+<script>
+(function(){
+  var tabs=[].slice.call(document.querySelectorAll('[role=tab]'));
+  function pick(t,focus){tabs.forEach(function(b){var on=b===t;b.setAttribute('aria-selected',on);b.tabIndex=on?0:-1;document.getElementById(b.getAttribute('aria-controls')).hidden=!on;});
+    if(focus)t.focus();try{history.replaceState(null,'','#'+t.id.slice(2));}catch(e){}}
+  tabs.forEach(function(b,i){b.addEventListener('click',function(){pick(b);});
+    b.addEventListener('keydown',function(ev){var k=ev.key,n=null;if(k==='ArrowRight')n=tabs[(i+1)%tabs.length];else if(k==='ArrowLeft')n=tabs[(i-1+tabs.length)%tabs.length];else if(k==='Home')n=tabs[0];else if(k==='End')n=tabs[tabs.length-1];if(n){ev.preventDefault();pick(n,true);}});});
+  var h=location.hash.slice(1);var t=h&&document.getElementById('t-'+h);if(t)pick(t);
+})();
+</script>
+</body>
+</html>
